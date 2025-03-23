@@ -1,0 +1,47 @@
+.card-container {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+  }
+  
+  .social-icons a {
+    margin: 0 10px;
+    font-size: 1.5rem;
+    color: #333;
+  }
+  
+  .action-buttons a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ff6347;
+    color: #fff;
+    margin: 10px;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  
+  .floating-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .floating-action {
+    text-align: center;
+    margin: 0 15px;
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .floating-action i {
+    font-size: 1.5rem;
+  }
+  
