@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Import Routes instead of Switch
-import CardPage from './components/CardPage';
+import CardPage from './components/CardPage.tsx';
 
 function App() {
   return (
