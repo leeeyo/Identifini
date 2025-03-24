@@ -6,6 +6,8 @@ module.exports = (app) => {
     createProxyMiddleware({
       target: "http://localhost:8080",
       changeOrigin: true,
+      pathRewrite: { "^/api": "/api" }, // This ensures /api paths remain as /api
+      logLevel: "debug", // Add this for debugging
     }),
   )
 }

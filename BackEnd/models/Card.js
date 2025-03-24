@@ -1,14 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose")
 
 const cardSchema = new mongoose.Schema({
   card_username: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   display_name: {
     type: String,
-    required: true
+    required: true,
   },
   bio: String,
   card_pic: String,
@@ -16,19 +16,19 @@ const cardSchema = new mongoose.Schema({
   theme_color_1: String,
   theme_color_2: String,
   theme_color_3: String,
-  // Corrected types for arrays and objects
-  social_medias: [{
-    platform: String,
-    url: String
-  }],
-  action_buttons: [{
-    label: String,
-    url: String
-  }],
-  floating_actions: [{
-    icon: String,
-    url: String
-  }],
+  // Fix these to be proper arrays/objects
+  social_medias: {
+    type: Array,
+    default: [],
+  },
+  action_buttons: {
+    type: Array,
+    default: [],
+  },
+  floating_actions: {
+    type: Array,
+    default: [],
+  },
   wifi_config: String,
   latitude: String,
   longitude: String,
@@ -36,18 +36,21 @@ const cardSchema = new mongoose.Schema({
   card_email: String,
   card_wifi_ssid: String,
   card_wifi_password: String,
-  extra_photos: [{
-    url: String
-  }],
+  extra_photos: {
+    type: Array,
+    default: [],
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User",
+    required: false, // Make it optional for now
   },
   created_by: String,
   created_at: {
     type: Date,
-    default: Date.now
-  }
-});
+    default: Date.now,
+  },
+})
 
-module.exports = mongoose.model('Card', cardSchema);
+module.exports = mongoose.model("Card", cardSchema)
+

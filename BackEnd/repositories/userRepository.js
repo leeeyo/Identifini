@@ -1,30 +1,42 @@
-const User = require('../models/userModel');
+// repositories/userRepository.js
+const User = require("../models/User");
 
 class UserRepository {
-    async create(userData) {
-        const user = new User(userData);
-        return user.save();
-    }
+  // Create a new user
+  async create(userData) {
+    const newUser = new User(userData);
+    return await newUser.save();
+  }
 
-    async findByEmail(email) {
-        return User.findOne({ email });
-    }
+  // Get a user by ID
+  async getById(id) {
+    return await User.findById(id);
+  }
 
-    async findById(id) {
-        return User.findById(id);
-    }
+  // Get a user by username
+  async getByUsername(username) {
+    return await User.findOne({ username });
+  }
 
-    async findAll() {
-        return User.find({});
-    }
+  // Get a user by email
+  async getByEmail(email) {
+    return await User.findOne({ email });
+  }
 
-    async update(id, userData) {
-        return User.findByIdAndUpdate(id, userData, { new: true });
-    }
+  // Update a user
+  async update(id, userData) {
+    return await User.findByIdAndUpdate(id, userData, { new: true, runValidators: true });
+  }
 
-    async delete(id) {
-        return User.findByIdAndDelete(id);
-    }
+  // Delete a user
+  async delete(id) {
+    return await User.findByIdAndDelete(id);
+  }
+
+  // Get all users (useful for admin)
+  async getAll(filters = {}) {
+    return await User.find(filters);
+  }
 }
 
 module.exports = new UserRepository();
