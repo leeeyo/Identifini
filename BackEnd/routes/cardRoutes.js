@@ -1,28 +1,30 @@
-const express = require('express');
-const router = express.Router();
-const Card = require('../models/Card'); // Your Card model
+const express = require("express")
+const router = express.Router()
+const cardController = require("../controllers/cardController")
 
-// Route to get a card by its username
-router.get('/:username', async (req, res) => {
-  try {
-    console.log("Fetching card for username:", req.params.username); // Debugging log
+// Get all cards - this route needs to be added
+router.get("/", cardController.fetchAllCards)
 
-    // Find the card based on the username passed in the URL
-    const card = await Card.findOne({ card_username: req.params.username });
+// Create a new card
+router.post("/", cardController.createCard)
 
-    // If the card is not found, return an error
-    if (!card) {
-      console.log('Card not found for username:', req.params.username); // Debugging log
-      return res.status(404).json({ error: 'Card not found' });
-    }
+// Get a card by ID
+router.get("/id/:id", cardController.fetchCard)
 
-    // If the card is found, return it in the response
-    console.log('Card found:', card); // Debugging log
-    res.json(card);
-  } catch (err) {
-    console.error('Error fetching card:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+// Get a card by username
+router.get("/username/:username", cardController.fetchCardByUsername)
 
-module.exports = router;
+// Update a card
+router.put("/:id", cardController.updateCard)
+
+// Delete a card
+router.delete("/:id", cardController.deleteCard)
+
+// Duplicate a card
+router.post("/:id/duplicate", cardController.duplicateCard)
+
+// Transfer a card to a new owner
+router.put("/:id/transfer", cardController.transferCard)
+
+module.exports = router
+

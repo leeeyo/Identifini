@@ -1,0 +1,149 @@
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .create-button {
+    background-color: #4a90e2;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .create-button:hover {
+    background-color: #3a7bc8;
+  }
+  
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .card-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: white;
+  }
+  
+  .card-header {
+    background-color: #4a90e2;
+    color: white;
+    padding: 15px;
+    text-align: center;
+  }
+  
+  .card-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .card-body {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .card-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 2px solid #4a90e2;
+  }
+  
+  .card-date {
+    color: #666;
+    font-size: 14px;
+    margin: 5px 0;
+  }
+  
+  .card-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px;
+    background-color: #f5f5f5;
+  }
+  
+  .card-button {
+    padding: 8px 12px;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .card-button:hover {
+    background-color: #d0d0d0;
+  }
+  
+  .card-button.delete {
+    background-color: #ff6b6b;
+    color: white;
+  }
+  
+  .card-button.delete:hover {
+    background-color: #ff5252;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  .error {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #ff5252;
+  }
+  
+  .no-cards {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+  }
+  
+  .no-cards p {
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  
+    .cards-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  
