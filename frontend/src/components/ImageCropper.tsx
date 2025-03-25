@@ -4,7 +4,6 @@ import type React from "react"
 import { useState, useRef } from "react"
 import ReactCrop, { type Crop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
-import "./ImageCropper.css"
 
 interface ImageCropperProps {
   isOpen: boolean
@@ -89,28 +88,38 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ isOpen, imageUrl, onClose, 
   if (!isOpen) return null
 
   return (
-    <div className="cropper-overlay">
-      <div className="cropper-modal">
-        <div className="cropper-content">
-          <h3>Crop Your Image</h3>
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-dark-card rounded-xl overflow-hidden max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <div className="p-4 border-b border-gray-200 dark:border-dark-border">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-dark-text-primary">Crop Your Image</h3>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-dark-input">
           {imageUrl && (
             <ReactCrop crop={crop} onChange={(c) => setCrop(c)} aspect={aspectRatio} keepSelection>
               <img
                 src={imageUrl || "/placeholder.svg"}
                 alt="Crop preview"
                 onLoad={onImageLoad}
-                style={{ maxWidth: "100%" }}
+                className="max-w-full max-h-[60vh] mx-auto"
               />
             </ReactCrop>
           )}
-          <div className="cropper-actions">
-            <button onClick={onClose} className="cancel-button">
-              Cancel
-            </button>
-            <button onClick={handleCropComplete} className="crop-button">
-              Crop & Save
-            </button>
-          </div>
+        </div>
+
+        <div className="p-4 border-t border-gray-200 dark:border-dark-border flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-gray-700 dark:text-dark-text-primary bg-gray-100 dark:bg-dark-hover hover:bg-gray-200 dark:hover:bg-dark-active transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCropComplete}
+            className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+          >
+            Crop & Save
+          </button>
         </div>
       </div>
     </div>

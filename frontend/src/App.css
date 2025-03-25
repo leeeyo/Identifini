@@ -9,37 +9,77 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* We can remove most of the custom CSS since we're using Tailwind */
 .content {
-  flex: 1;
-  padding: 20px;
-  margin-top: 70px; /* Match the navbar height */
-  transition: margin-top 0.3s ease;
+  @apply flex-1 pt-[70px] transition-all duration-300;
 }
 
-/* Adjust content margin when navbar is scrolled */
+/* When navbar is scrolled, adjust content margin */
 .navbar.scrolled + .content {
-  margin-top: 60px;
+  @apply pt-16;
 }
 
-/* Mobile optimization */
+/* Mobile optimizations */
 @media (max-width: 768px) {
-  .content {
-    padding: 15px;
-  }
-
-  /* Adjust for mobile dashboard layout */
   .mobile-dashboard-layout {
-    display: flex;
-    flex-direction: column;
+    @apply flex flex-col;
   }
 
   .mobile-dashboard-header {
-    order: 2; /* Move header to the right/bottom on mobile */
-    margin-bottom: 15px;
+    @apply order-2 mb-4;
   }
 
   .mobile-dashboard-content {
-    order: 1;
+    @apply order-1;
   }
+}
+
+/* Dark mode improvements */
+.dark body {
+  background-color: #121826;
+  color: #e2e8f0;
+}
+
+/* Improved input styling for dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1e293b;
+  border-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #4169e1;
+  box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+}
+
+/* Card styling for dark mode */
+.dark .card {
+  background-color: #1e293b;
+  border-color: #2d3748;
+}
+
+/* Button styling for dark mode */
+.dark button.primary {
+  background-color: #4169e1;
+  color: white;
+}
+
+.dark button.primary:hover {
+  background-color: #3a5cd0;
+}
+
+/* Navbar styling for dark mode */
+.dark .navbar {
+  background-color: #121826;
+  border-color: #2d3748;
 }
 

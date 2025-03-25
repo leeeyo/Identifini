@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useState, useEffect, useContext, useCallback } from "react"
 import API from "../services/API"
+import AuthService from "../services/AuthService"
 
 // Export the User interface so it can be imported elsewhere
 export interface User {
@@ -23,6 +24,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (username: string, password: string) => Promise<void>
   register: (userData: RegisterData) => Promise<void>
+  socialLogin: (provider: string, token: string, userData?: any) => Promise<void>
   logout: () => void
   updateProfile: (userData: Partial<User>) => Promise<void>
   updateThemePreference: (theme: "light" | "dark" | "system") => Promise<void>
@@ -63,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (username: string, password: string) => {
     setIsLoading(true)
     try {
-      const response = await API.post<{ token: string } & User>("/api/auth/login", { username, password })
+      const response = await AuthService.login({ email: username, password })
 
       // Save user and token to state and localStorage
       setUser(response)
@@ -81,11 +83,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  // Social login function
+  const socialLogin = async (provider: string, token: string, userData?: any) => {
+    setIsLoading(true)
+    try {
+      const response = await AuthService.socialLogin({
+        provider,
+        token,
+        userData,
+      })
+
+      // Save user and token to state and localStorage
+      setUser(response)
+      setToken(response.token)
+      localStorage.setItem("user", JSON.stringify(response))
+      localStorage.setItem("token", response.token)
+
+      // Set the token in the API headers
+      API.setAuthToken(response.token)
+    } catch (error) {
+      console.error(`${provider} login error:`, error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Register function
   const register = async (userData: RegisterData) => {
     setIsLoading(true)
     try {
-      const response = await API.post<{ token: string } & User>("/api/auth/register", userData)
+      const response = await AuthService.register(userData)
 
       // Save user and token to state and localStorage
       setUser(response)
@@ -196,6 +224,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  // Update the useEffect for storage event listener to be more specific
+  // and prevent it from interfering with form inputs
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      // Only react to specific storage changes related to auth
+      if (event.key === "user" || event.key === "token") {
+        // Force re-render when user data changes
+        setUser(event.key === "user" && event.newValue ? JSON.parse(event.newValue) : null)
+        setToken(event.key === "token" ? event.newValue : null)
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+    }
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -205,6 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         register,
+        socialLogin,
         logout,
         updateProfile,
         updateThemePreference,

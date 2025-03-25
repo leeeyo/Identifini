@@ -2,7 +2,7 @@
 
 import "./index.css"
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
@@ -17,11 +17,9 @@ import Login from "./components/auth/Login"
 import Register from "./components/auth/Register"
 import Profile from "./components/auth/Profile"
 import "./App.css"
+import OAuthCallback from "./components/auth/OAuthCallback"
 
 const App: React.FC = () => {
-  console.log("App component rendering")
-  const [scrolled, setScrolled] = useState(false)
-
   // We'll create a ScrollToTop component to handle scroll behavior
   const ScrollToTop = () => {
     const { pathname } = useLocation()
@@ -38,7 +36,7 @@ const App: React.FC = () => {
       <ThemeProvider>
         <Router>
           <ScrollToTop />
-          <div className="App">
+          <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark transition-colors duration-300">
             <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
@@ -52,6 +50,7 @@ const App: React.FC = () => {
                   </>
                 }
               />
+              <Route path="/auth/:provider/callback" element={<OAuthCallback />} />
 
               {/* Protected routes */}
               <Route

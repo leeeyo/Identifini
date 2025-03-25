@@ -13,8 +13,8 @@ interface CardItemProps {
 
 const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDuplicate }) => {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
-      <div className="bg-blue-600 p-4 text-white">
+    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+      <div className="bg-primary-600 dark:bg-primary-700 p-4 text-white">
         <h3 className="text-base font-medium truncate">@{card.card_username}</h3>
       </div>
       <div className="p-5">
@@ -23,47 +23,50 @@ const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDup
             <img
               src={card.card_pic || "/placeholder.svg"}
               alt={card.display_name}
-              className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+              className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm"
               onError={(e) => {
                 // If image fails to load, replace with initial
                 e.currentTarget.style.display = "none"
-                const nextElement = e.currentTarget.nextElementSibling;
-                if (nextElement && nextElement instanceof HTMLElement) {
-                  nextElement.style.display = "flex";
+                // Cast nextElementSibling to HTMLElement to access style property
+                const sibling = e.currentTarget.nextElementSibling as HTMLElement
+                if (sibling) {
+                  sibling.style.display = "flex"
                 }
               }}
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-lg shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-300 font-semibold text-lg shadow-sm">
               {card.display_name ? card.display_name.charAt(0).toUpperCase() : "?"}
             </div>
           )}
           <div className="ml-3">
-            <h4 className="font-semibold text-gray-800">{card.display_name}</h4>
-            <p className="text-xs text-gray-500">Created {new Date(card.created_at).toLocaleDateString()}</p>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200">{card.display_name}</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Created {new Date(card.created_at).toLocaleDateString()}
+            </p>
           </div>
         </div>
 
-        {card.bio && <p className="text-sm text-gray-600 mb-4 line-clamp-2">{card.bio}</p>}
+        {card.bio && <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{card.bio}</p>}
 
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <Link
             to={`/view-card/${card.card_username}`}
-            className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+            className="text-xs px-2 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
           >
             View
           </Link>
 
           <Link
             to={`/edit-card/${card.card_username}`}
-            className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded hover:bg-gray-100 transition-colors"
+            className="text-xs px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
           >
             Edit
           </Link>
 
           <button
             onClick={() => onDelete(card._id || card.id || "")}
-            className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+            className="text-xs px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             Delete
           </button>
@@ -71,7 +74,7 @@ const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDup
           {canDuplicate && (
             <button
               onClick={() => onDuplicate(card._id || card.id || "")}
-              className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors"
+              className="text-xs px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
             >
               Duplicate
             </button>
@@ -79,7 +82,7 @@ const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDup
 
           <Link
             to={`/view-leads/${card.card_username}`}
-            className="text-xs px-2 py-1 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 transition-colors"
+            className="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
           >
             Leads
           </Link>

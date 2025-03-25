@@ -48,8 +48,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Apply theme to document when it changes
   useEffect(() => {
-    document.documentElement.classList.remove("light", "dark")
-    document.documentElement.classList.add(theme)
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
     localStorage.setItem("theme", theme)
   }, [theme])
 

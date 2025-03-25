@@ -22,15 +22,13 @@ router.get("/register", (req, res) => {
       password: "password123",
       name: "John Doe",
       email: "user@example.com",
+      themePreference: "light", // Added theme preference
     },
   })
 })
 
 // POST /api/auth/register - Register a new user
-router.post("/register", (req, res) => {
-  console.log("POST /api/auth/register route hit")
-  return authController.register(req, res)
-})
+router.post("/register", authController.register)
 
 // GET /api/auth/login - Show login info
 router.get("/login", (req, res) => {
@@ -45,22 +43,25 @@ router.get("/login", (req, res) => {
 })
 
 // POST /api/auth/login - Login a user
-router.post("/login", (req, res) => {
-  console.log("POST /api/auth/login route hit")
-  return authController.login(req, res)
-})
+router.post("/login", authController.login)
+
+// POST /api/auth/social-login - Social login
+router.post("/social-login", authController.socialLogin)
+
+// GET /api/auth/google - Google OAuth redirect
+router.get("/google", authController.googleAuth)
+
+// OAuth callback route for Google
+router.get("/google/callback", authController.googleCallback)
 
 // GET /api/auth/profile - Get user profile (protected route)
-router.get("/profile", protect, (req, res) => {
-  console.log("GET /api/auth/profile route hit")
-  return authController.getProfile(req, res)
-})
+router.get("/profile", protect, authController.getProfile)
 
 // PUT /api/auth/profile - Update user profile (protected route)
-router.put("/profile", protect, (req, res) => {
-  console.log("PUT /api/auth/profile route hit")
-  return authController.updateProfile(req, res)
-})
+router.put("/profile", protect, authController.updateProfile)
+
+// PUT /api/auth/theme - Update user theme preference (protected route)
+router.put("/theme", protect, authController.updateThemePreference)
 
 module.exports = router
 
