@@ -8,8 +8,9 @@ class CardService {
   }
 
   // Get all cards
-  async getAllCards() {
-    const cards = await cardRepository.getAll()
+  async getAllCards(userId = null) {
+    const filters = userId ? { user: userId } : {}
+    const cards = await cardRepository.getAll(filters)
     return { cards, total: cards.length }
   }
 
@@ -66,18 +67,6 @@ class CardService {
     cardData.display_name = `${cardData.display_name || "Card"} (Copy)`
 
     return await cardRepository.create(cardData)
-  }
-
-  // Transfer a card to a new owner
-  async transferCard(id, newOwnerId) {
-    if (!id) throw new Error("Card ID is required")
-    if (!newOwnerId) throw new Error("New owner ID is required")
-
-    const existingCard = await cardRepository.getById(id)
-    if (!existingCard) throw new Error("Card not found")
-
-    // Update the owner field
-    return await cardRepository.update(id, { user: newOwnerId })
   }
 }
 

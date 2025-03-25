@@ -1,42 +1,42 @@
-// repositories/userRepository.js
-const User = require("../models/User");
+const User = require("../models/User")
 
 class UserRepository {
   // Create a new user
   async create(userData) {
-    const newUser = new User(userData);
-    return await newUser.save();
+    const user = new User(userData)
+    return await user.save()
   }
 
-  // Get a user by ID
+  // Find user by ID
   async getById(id) {
-    return await User.findById(id);
+    return await User.findById(id).select("-password")
   }
 
-  // Get a user by username
+  // Find user by username
   async getByUsername(username) {
-    return await User.findOne({ username });
+    return await User.findOne({ username })
   }
 
-  // Get a user by email
+  // Find user by email
   async getByEmail(email) {
-    return await User.findOne({ email });
+    return await User.findOne({ email })
   }
 
-  // Update a user
+  // Update user
   async update(id, userData) {
-    return await User.findByIdAndUpdate(id, userData, { new: true, runValidators: true });
+    return await User.findByIdAndUpdate(id, userData, { new: true }).select("-password")
   }
 
-  // Delete a user
+  // Delete user
   async delete(id) {
-    return await User.findByIdAndDelete(id);
+    return await User.findByIdAndDelete(id)
   }
 
-  // Get all users (useful for admin)
-  async getAll(filters = {}) {
-    return await User.find(filters);
+  // Get all users (for admin)
+  async getAll() {
+    return await User.find().select("-password")
   }
 }
 
-module.exports = new UserRepository();
+module.exports = new UserRepository()
+

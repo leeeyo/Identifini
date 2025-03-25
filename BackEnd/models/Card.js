@@ -16,7 +16,6 @@ const cardSchema = new mongoose.Schema({
   theme_color_1: String,
   theme_color_2: String,
   theme_color_3: String,
-  // Fix these to be proper arrays/objects
   social_medias: {
     type: Array,
     default: [],
@@ -43,9 +42,8 @@ const cardSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: false, // Make it optional for now
+    required: true, // Now required
   },
-  created_by: String,
   created_at: {
     type: Date,
     default: Date.now,
