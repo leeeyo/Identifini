@@ -41,6 +41,7 @@ class AuthController {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture,
         token,
       })
     } catch (error) {
@@ -73,6 +74,8 @@ class AuthController {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture,
+        created_at: user.created_at,
         token,
       })
     } catch (error) {
@@ -105,11 +108,24 @@ class AuthController {
         return res.status(401).json({ error: "Not authorized" })
       }
 
+      console.log("Update profile request body:", req.body)
+
       // Update user
       const updatedUser = await userService.updateUser(req.user._id, req.body)
 
-      // Return updated user data
-      res.status(200).json(updatedUser)
+      console.log("Updated user from service:", updatedUser)
+
+      // Return updated user data with all fields including profilePicture
+      res.status(200).json({
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        profilePicture: updatedUser.profilePicture,
+        created_at: updatedUser.created_at,
+        updated_at: updatedUser.updated_at,
+      })
     } catch (error) {
       console.error("Error in updateProfile:", error)
       res.status(400).json({ error: error.message })

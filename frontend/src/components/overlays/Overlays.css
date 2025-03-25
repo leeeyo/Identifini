@@ -1,0 +1,422 @@
+/* Common Overlay Styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .overlay-content {
+    background-color: white;
+    border-radius: 15px;
+    padding: 30px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    text-align: center;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .overlay-content h2 {
+    margin-bottom: 20px;
+    color: var(--theme-color-1, #4a90e2);
+  }
+  
+  /* QR Code Overlay */
+  .qr-code-container {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* WiFi Overlay */
+  .wifi-details {
+    margin-top: 20px;
+  }
+  
+  .wifi-field {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .wifi-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .password-field {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .password-field input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .password-toggle,
+  .password-copy,
+  .password-share {
+    background-color: var(--theme-color-1, #4a90e2);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  /* Map Overlay */
+  .map-container {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    z-index: 1;
+    position: relative; /* Add this */
+  }
+  
+  .map-link {
+    display: inline-block;
+    padding: 12px 20px;
+    background-color: var(--theme-color-1, #4a90e2);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  /* Static Map Styles */
+  .static-map-container {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+  }
+  
+  .static-map-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 400px;
+  }
+  
+  .map-marker {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 15px;
+  }
+  
+  .map-info {
+    width: 100%;
+  }
+  
+  .map-address {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .map-coordinates {
+    font-family: monospace;
+    color: #666;
+  }
+  
+  .map-link {
+    display: inline-block;
+    padding: 12px 20px;
+    background-color: var(--theme-color-1, #4a90e2);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  
+  .map-link:hover {
+    background-color: #3a7bc8;
+  }
+  
+  /* Gallery Overlay */
+  .gallery-overlay-content {
+    max-width: 800px;
+  }
+  
+  .gallery-container {
+    width: 100%;
+  }
+  
+  .gallery-image-container {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+  }
+  
+  .gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  
+  /* Gallery Overlay Specific Styles */
+  .gallery-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .gallery-gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(-45deg, var(--theme-color-1), var(--theme-color-2));
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    z-index: 1;
+  }
+  
+  @keyframes gradientBG {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .gallery-slides {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .gallery-slide {
+    position: absolute;
+    width: calc(min(90vw, 90vh));
+    height: calc(min(90vw, 90vh));
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+  
+  .gallery-slide.active {
+    opacity: 1;
+  }
+  
+  .gallery-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    padding: 0 20px;
+  }
+  
+  .gallery-nav {
+    background-color: var(--theme-color-1, #4a90e2);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .gallery-indicators {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .gallery-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ddd;
+    cursor: pointer;
+  }
+  
+  .gallery-indicator.active {
+    background-color: var(--theme-color-1, #4a90e2);
+  }
+  
+  .no-photos {
+    padding: 40px;
+    color: #777;
+  }
+  
+  /* Lead Form Overlay */
+  .lead-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .submit-button,
+  .dismiss-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .submit-button {
+    background-color: var(--theme-color-1, #4a90e2);
+    color: white;
+  }
+  
+  .submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .dismiss-button {
+    background-color: #f5f5f5;
+    color: #333;
+  }
+  
+  .lead-form-status {
+    padding: 20px;
+    text-align: center;
+    border-radius: 5px;
+    margin: 20px 0;
+    font-weight: 600;
+  }
+  
+  .lead-form-status.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .lead-form-status.error {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .overlay-content {
+      padding: 20px;
+    }
+  
+    .gallery-image-container {
+      height: 250px;
+    }
+  }
+  
+  /* Fix for Leaflet map */
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+  }
+  
+  /* Make sure Leaflet controls appear above other elements */
+  .leaflet-control {
+    z-index: 2 !important;
+  }
+  
+  /* Fix for Leaflet popup */
+  .leaflet-popup {
+    z-index: 3 !important;
+  }
+  
+  

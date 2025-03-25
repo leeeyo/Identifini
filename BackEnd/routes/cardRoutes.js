@@ -1,7 +1,9 @@
 const express = require("express")
 const router = express.Router()
 const cardController = require("../controllers/cardController")
+const leadController = require("../controllers/leadController")
 const { protect } = require("../middleware/authMiddleware")
+const vCardController = require("../controllers/vCardController")
 
 // Log available controller methods for debugging
 console.log("Available controller methods:", Object.keys(cardController))
@@ -57,16 +59,29 @@ router.post("/:id/duplicate", (req, res) => {
   return cardController.duplicateCard(req, res)
 })
 
-// GET /api/cards/:id/leads - Get leads for a card
-router.get("/:id/leads", (req, res) => {
-  console.log("GET /api/cards/:id/leads route hit", req.params.id)
-  return cardController.getCardLeads(req, res)
+// GET /api/cards/username/:username/vcard - Get a vCard for a card
+router.get("/username/:username/vcard", (req, res) => {
+  console.log("GET /api/cards/username/:username/vcard route hit", req.params.username)
+  return vCardController.generateVCard(req, res)
+})
+
+// Lead-related routes
+// GET /api/cards/username/:username/leads - Get leads for a card
+router.get("/username/:username/leads", (req, res) => {
+  console.log("GET /api/cards/username/:username/leads route hit", req.params.username)
+  return leadController.getLeadsByCardUsername(req, res)
 })
 
 // POST /api/cards/username/:username/leads - Submit lead for a card
 router.post("/username/:username/leads", (req, res) => {
   console.log("POST /api/cards/username/:username/leads route hit", req.params.username)
-  return cardController.submitCardLead(req, res)
+  return leadController.submitLead(req, res)
+})
+
+// DELETE /api/cards/username/:username/leads/:leadId - Delete a lead
+router.delete("/username/:username/leads/:leadId", (req, res) => {
+  console.log("DELETE /api/cards/username/:username/leads/:leadId route hit", req.params)
+  return leadController.deleteLead(req, res)
 })
 
 module.exports = router

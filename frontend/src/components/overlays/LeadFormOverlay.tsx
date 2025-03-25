@@ -48,14 +48,7 @@ const LeadFormOverlay: React.FC<LeadFormOverlayProps> = ({ isOpen, onClose, card
       setIsSubmitting(true)
       setStatus(null)
 
-      try {
-        // Try to submit the lead data to the API
-        await onSubmit(formData)
-      } catch (apiError) {
-        console.warn("API endpoint not implemented yet, simulating success:", apiError)
-        // Simulate a successful submission if the API endpoint is not implemented
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      }
+      await onSubmit(formData)
 
       setStatus({
         message: "Information submitted successfully!",

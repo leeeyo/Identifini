@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
+import { Icon } from "../IconWrapper"
 import "./Overlays.css"
 
 interface WifiOverlayProps {
@@ -9,10 +10,12 @@ interface WifiOverlayProps {
   onClose: () => void
   wifiSSID: string
   wifiPassword: string
+  showToast: (message: string) => void
 }
 
-const WifiOverlay: React.FC<WifiOverlayProps> = ({ isOpen, onClose, wifiSSID, wifiPassword }) => {
+const WifiOverlay: React.FC<WifiOverlayProps> = ({ isOpen, onClose, wifiSSID, wifiPassword, showToast }) => {
   const qrCodeRef = useRef<HTMLDivElement>(null)
+  const [passwordVisible, setPasswordVisible] = useState(false)
 
   useEffect(() => {
     if (isOpen && qrCodeRef.current) {
@@ -28,6 +31,39 @@ const WifiOverlay: React.FC<WifiOverlayProps> = ({ isOpen, onClose, wifiSSID, wi
       `
     }
   }, [isOpen, wifiSSID, wifiPassword])
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible)
+
+    // Auto-hide password after 4 seconds
+    if (!passwordVisible) {
+      setTimeout(() => {
+        setPasswordVisible(false)
+      }, 4000)
+    }
+  }
+
+  const copyPassword = () => {
+    navigator.clipboard
+      .writeText(wifiPassword)
+      .then(() => showToast("Password copied!"))
+      .catch(() => showToast("Failed to copy password."))
+  }
+
+  const sharePassword = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "WiFi Password",
+          text: wifiPassword,
+        })
+      } catch (err) {
+        showToast("Error sharing password")
+      }
+    } else {
+      showToast("Sharing not supported in this browser")
+    }
+  }
 
   if (!isOpen) return null
 
@@ -48,12 +84,15 @@ const WifiOverlay: React.FC<WifiOverlayProps> = ({ isOpen, onClose, wifiSSID, wi
             <div className="wifi-field">
               <label>Password:</label>
               <div className="password-field">
-                <input type="password" value={wifiPassword} readOnly />
-                <button className="password-toggle">
-                  <i className="fas fa-eye"></i>
+                <input type={passwordVisible ? "text" : "password"} value={wifiPassword} readOnly />
+                <button className="password-toggle" onClick={togglePasswordVisibility}>
+                  {passwordVisible ? <Icon name="FaEyeSlash" /> : <Icon name="FaEye" />}
                 </button>
-                <button className="password-copy">
-                  <i className="fas fa-copy"></i>
+                <button className="password-copy" onClick={copyPassword}>
+                  <Icon name="FaCopy" />
+                </button>
+                <button className="password-share" onClick={sharePassword}>
+                  <Icon name="FaShareAlt" />
                 </button>
               </div>
             </div>

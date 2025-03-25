@@ -1,13 +1,51 @@
-body {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-50 text-gray-900;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+/* Custom utility classes */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-md hover:-translate-y-0.5 focus:ring-indigo-500;
+  }
+
+  .btn-secondary {
+    @apply bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500;
+  }
+
+  .btn-danger {
+    @apply bg-white border-gray-300 text-red-700 hover:bg-red-50 focus:ring-red-500;
+  }
+}
+
+/* Ensure the logout button styling is not affected by global styles */
+.navbar-actions .logout-button {
+  @apply bg-transparent text-gray-600 border-none px-4 py-2 rounded-md font-medium cursor-pointer shadow-none;
+}
+
+.navbar-actions .logout-button:hover {
+  @apply bg-gray-100 text-gray-800;
+}
+

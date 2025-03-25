@@ -1,19 +1,20 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import CardService from "../services/CardService"
 import type { Card } from "../types/card"
 import { useAuth } from "../context/AuthContext"
 import "./CardView.css"
+import { Icon } from "./IconWrapper"
 
 // Import overlay components
-import { QRCodeOverlay } from "./overlays"
-import { WifiOverlay } from "./overlays"
-import { MapOverlay } from "./overlays"
-import { GalleryOverlay } from "./overlays"
-import { LeadFormOverlay } from "./overlays"
+import QRCodeOverlay from "./overlays/QRCodeOverlay"
+import WifiOverlay from "./overlays/WifiOverlay"
+import MapOverlay from "./overlays/MapOverlay"
+import GalleryOverlay from "./overlays/GalleryOverlay"
+import LeadFormOverlay from "./overlays/LeadFormOverlay"
 
 const CardView: React.FC = () => {
   const { username } = useParams<{ username: string }>()
@@ -32,6 +33,9 @@ const CardView: React.FC = () => {
   const [showMapOverlay, setShowMapOverlay] = useState(false)
   const [showGalleryOverlay, setShowGalleryOverlay] = useState(false)
   const [showLeadFormOverlay, setShowLeadFormOverlay] = useState(false)
+
+  // Refs
+  const mapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchCardData = async () => {
@@ -169,13 +173,15 @@ const CardView: React.FC = () => {
     if (!card) return
 
     try {
-      // Since submitLead doesn't exist in CardService, we'll simulate success
-      console.log("Would submit lead data:", formData, "for card:", card.card_username)
-
-      // Simulate a delay for better UX
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
+      // Submit lead data to the API
+      await CardService.submitLead(card.card_username, formData)
       showToast("Contact information submitted successfully!")
+
+      // Download vCard after successful submission
+      setTimeout(() => {
+        handleDownloadVCard()
+      }, 1000)
+
       return Promise.resolve()
     } catch (error) {
       console.error("Error submitting lead:", error)
@@ -186,6 +192,24 @@ const CardView: React.FC = () => {
   const goToImage = (index: number) => {
     setCurrentGalleryIndex(index)
     setShowGalleryOverlay(true)
+  }
+
+  // Handle vCard download
+  const handleDownloadVCard = () => {
+    if (!card) return
+
+    // Create a direct download link to the vCard endpoint
+    const vCardUrl = `/api/cards/username/${card.card_username}/vcard`
+
+    // Create a temporary anchor element to trigger the download
+    const link = document.createElement("a")
+    link.href = vCardUrl
+    link.download = `${card.display_name}.vcf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    showToast("Contact card downloading...")
   }
 
   if (loading) {
@@ -219,17 +243,20 @@ const CardView: React.FC = () => {
         } as React.CSSProperties
       }
     >
+      {/* Toast Notification */}
+      {toastMessage && <div className="toast-notification">{toastMessage}</div>}
+
       {/* Top Header */}
       <div className="card-view-header">
         <button className="menu-button" onClick={() => setShowDropdown(!showDropdown)}>
-          <i className="fas fa-ellipsis-v"></i>
+          <Icon name="FaEllipsisV" />
         </button>
         <button className="share-button" onClick={handleShare}>
-          <i className="fas fa-share-alt"></i>
+          <Icon name="FaShareAlt" />
         </button>
         {isOwner() && (
           <Link to={`/edit-card/${card.card_username}`} className="edit-button">
-            <i className="fas fa-edit"></i>
+            <Icon name="FaEdit" />
           </Link>
         )}
       </div>
@@ -239,35 +266,38 @@ const CardView: React.FC = () => {
         <div className="dropdown-menu">
           <ul>
             <li onClick={handleShare}>
-              <i className="fas fa-share-alt"></i> Share
+              <Icon name="FaShareAlt" /> Share
             </li>
             <li onClick={handleCopyLink}>
-              <i className="fas fa-copy"></i> Copy Link
+              <Icon name="FaCopy" /> Copy Link
             </li>
             <li onClick={() => setShowQROverlay(true)}>
-              <i className="fas fa-qrcode"></i> QR Code
+              <Icon name="FaQrcode" /> QR Code
             </li>
             {card.card_wifi_ssid && (
               <li onClick={() => setShowWifiOverlay(true)}>
-                <i className="fas fa-wifi"></i> WiFi
+                <Icon name="FaWifi" /> WiFi
               </li>
             )}
             {extraPhotos.length > 0 && (
               <li onClick={() => setShowGalleryOverlay(true)}>
-                <i className="fas fa-images"></i> Gallery
+                <Icon name="FaImages" /> Gallery
               </li>
             )}
             <li onClick={() => setShowLeadFormOverlay(true)}>
-              <i className="fas fa-address-book"></i> Save Contact
+              <Icon name="FaAddressBook" /> Save Contact
+            </li>
+            <li onClick={handleDownloadVCard}>
+              <Icon name="FaDownload" /> Download vCard
             </li>
             {isOwner() && (
               <li onClick={() => navigate(`/edit-card/${card.card_username}`)}>
-                <i className="fas fa-edit"></i> Edit Card
+                <Icon name="FaEdit" /> Edit Card
               </li>
             )}
             {isOwner() && (
               <li onClick={() => navigate("/")}>
-                <i className="fas fa-arrow-left"></i> Back to Dashboard
+                <Icon name="FaArrowLeft" /> Back to Dashboard
               </li>
             )}
           </ul>
@@ -295,7 +325,7 @@ const CardView: React.FC = () => {
             <div className="contact-info">
               {card.card_email && (
                 <div className="contact-item">
-                  <i className="fas fa-envelope"></i>
+                  <Icon name="FaEnvelope" />
                   <a href={`mailto:${card.card_email}`} style={{ color: "inherit", textDecoration: "none" }}>
                     {card.card_email}
                   </a>
@@ -303,7 +333,7 @@ const CardView: React.FC = () => {
               )}
               {card.display_address && (
                 <div className="contact-item">
-                  <i className="fas fa-map-marker-alt"></i>
+                  <Icon name="FaMapMarkerAlt" />
                   <span>{card.display_address}</span>
                 </div>
               )}
@@ -315,7 +345,19 @@ const CardView: React.FC = () => {
             <div className="social-icons">
               {socialMedia.map((social: any, index: number) => (
                 <a key={index} href={social.url} target="_blank" rel="noopener noreferrer">
-                  <i className={`fab ${social.icon || "fa-globe"}`}></i>
+                  {social.icon === "fa-facebook" ? (
+                    <Icon name="FaFacebookF" />
+                  ) : social.icon === "fa-twitter" ? (
+                    <Icon name="FaTwitter" />
+                  ) : social.icon === "fa-instagram" ? (
+                    <Icon name="FaInstagram" />
+                  ) : social.icon === "fa-linkedin" ? (
+                    <Icon name="FaLinkedin" />
+                  ) : social.icon === "fa-youtube" ? (
+                    <Icon name="FaYoutube" />
+                  ) : (
+                    <Icon name="FaGlobe" />
+                  )}
                 </a>
               ))}
             </div>
@@ -327,23 +369,40 @@ const CardView: React.FC = () => {
               {actionButtons.map((button: any, index: number) => (
                 <div key={index} className="action-btn-wrapper">
                   <a href={button.url} className="action-btn" target="_blank" rel="noopener noreferrer">
-                    <i className={`fas ${button.icon || "fa-link"}`}></i> {button.label}
+                    {button.icon === "fa-phone" ? (
+                      <Icon name="FaPhone" />
+                    ) : button.icon === "fa-envelope" ? (
+                      <Icon name="FaEnvelope" />
+                    ) : button.icon === "fa-whatsapp" ? (
+                      <Icon name="FaWhatsapp" />
+                    ) : (
+                      <Icon name="FaLink" />
+                    )}{" "}
+                    {button.label}
                   </a>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Gallery Indicators */}
+          {/* Gallery button if photos exist */}
           {extraPhotos.length > 0 && (
-            <div className="gallery-indicators">
-              {extraPhotos.map((_photo: string, index: number) => (
-                <span
-                  key={index}
-                  className={`indicator ${index === currentGalleryIndex ? "active" : ""}`}
-                  onClick={() => goToImage(index)}
-                ></span>
-              ))}
+            <div style={{ marginTop: "15px" }}>
+              <button
+                className="action-btn"
+                style={{
+                  display: "inline-block",
+                  padding: "10px 20px",
+                  background: "rgba(255,255,255,0.2)",
+                  borderRadius: "20px",
+                  border: "none",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowGalleryOverlay(true)}
+              >
+                <Icon name="FaImages" /> View Gallery ({extraPhotos.length})
+              </button>
             </div>
           )}
         </div>
@@ -352,28 +411,33 @@ const CardView: React.FC = () => {
         <div className="floating-actions">
           {card.latitude && card.longitude && (
             <button className="floating-action" title="Location" onClick={() => setShowMapOverlay(true)}>
-              <i className="fas fa-location-dot"></i>
+              <Icon name="FaMapMarker" />
               <span>Location</span>
             </button>
           )}
 
           {card.card_wifi_ssid && (
             <button className="floating-action" title="WiFi" onClick={() => setShowWifiOverlay(true)}>
-              <i className="fas fa-wifi"></i>
+              <Icon name="FaWifi" />
               <span>WiFi</span>
             </button>
           )}
 
           {extraPhotos.length > 0 && (
             <button className="floating-action" title="Gallery" onClick={() => setShowGalleryOverlay(true)}>
-              <i className="fas fa-images"></i>
+              <Icon name="FaImages" />
               <span>Gallery</span>
             </button>
           )}
 
           <button className="floating-action" title="Save Contact" onClick={() => setShowLeadFormOverlay(true)}>
-            <i className="fas fa-address-book"></i>
+            <Icon name="FaAddressBook" />
             <span>Contact</span>
+          </button>
+
+          <button className="floating-action" title="Download vCard" onClick={handleDownloadVCard}>
+            <Icon name="FaDownload" />
+            <span>vCard</span>
           </button>
 
           {floatingActions.length > 0 &&
@@ -419,16 +483,23 @@ const CardView: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <i className={`fas ${action.icon || iconClass}`}></i>
+                  {action.type === "Whatsapp" || action.type === "WhatsApp" ? (
+                    <Icon name="FaWhatsapp" />
+                  ) : action.type === "SMS" ? (
+                    <Icon name="FaComment" />
+                  ) : action.type === "Call" ? (
+                    <Icon name="FaPhone" />
+                  ) : action.type === "Email" ? (
+                    <Icon name="FaEnvelope" />
+                  ) : (
+                    <Icon name="FaLink" />
+                  )}
                   <span>{action.type}</span>
                 </a>
               )
             })}
         </div>
       </div>
-
-      {/* Toast Notification */}
-      {toastMessage && <div className="toast-notification">{toastMessage}</div>}
 
       {/* Overlays */}
       <QRCodeOverlay
@@ -443,6 +514,7 @@ const CardView: React.FC = () => {
         onClose={() => setShowWifiOverlay(false)}
         wifiSSID={card.card_wifi_ssid || ""}
         wifiPassword={card.card_wifi_password || ""}
+        showToast={showToast}
       />
 
       <MapOverlay

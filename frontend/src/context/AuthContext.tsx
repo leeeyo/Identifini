@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useState, useEffect, useContext } from "react"
+import { createContext, useState, useEffect, useContext, useCallback } from "react"
 import API from "../services/API"
 
 interface User {
@@ -10,6 +10,8 @@ interface User {
   name?: string
   email?: string
   role: string
+  profilePicture?: string
+  created_at?: string
 }
 
 interface AuthContextType {
@@ -98,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   // Logout function
-  const logout = () => {
+  const logout = useCallback(() => {
     // Clear user and token from state and localStorage
     setUser(null)
     setToken(null)
@@ -107,17 +109,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Remove the token from the API headers
     API.setAuthToken(null)
-  }
+  }, [])
 
   // Update profile function
   const updateProfile = async (userData: Partial<User>) => {
     setIsLoading(true)
     try {
-      const response = await API.put<User>("/api/auth/profile", userData)
+      console.log("Sending profile update to API:", userData)
 
-      // Update user in state and localStorage
-      setUser((prev) => (prev ? { ...prev, ...response } : response))
-      localStorage.setItem("user", JSON.stringify({ ...user, ...response }))
+      // Explicitly send the profile picture in the request
+      const response = await API.put<User>("/api/auth/profile", {
+        name: userData.name,
+        email: userData.email,
+        profilePicture: userData.profilePicture,
+      })
+
+      console.log("Profile update response:", response)
+
+      if (!response) {
+        throw new Error("No response received from server")
+      }
+
+      // Create a properly merged user object with all fields
+      const updatedUser = {
+        ...user,
+        ...response,
+        // Ensure profilePicture is explicitly set from the response or userData
+        profilePicture: response.profilePicture || userData.profilePicture || user?.profilePicture,
+      }
+
+      console.log("Updated user object:", updatedUser)
+
+      // Update state and localStorage - create a new object to ensure React detects the change
+      setUser({ ...updatedUser })
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+
+      // Force a re-render of components that use the user object
+      const event = new Event("storage")
+      window.dispatchEvent(event)
+
+      return Promise.resolve()
     } catch (error) {
       console.error("Update profile error:", error)
       throw error

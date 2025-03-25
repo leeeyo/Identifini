@@ -52,13 +52,23 @@ class UserService {
     if (!id) throw new Error("User ID is required")
     if (!userData) throw new Error("User data is required")
 
+    console.log("Updating user with data:", userData)
+
     // If updating password, hash it
     if (userData.password) {
       const salt = await bcrypt.genSalt(10)
       userData.password = await bcrypt.hash(userData.password, salt)
     }
 
-    return await userRepository.update(id, userData)
+    // Update the updated_at field
+    userData.updated_at = Date.now()
+
+    // Ensure profilePicture is included in the update if provided
+    const updatedUser = await userRepository.update(id, userData)
+
+    console.log("User updated successfully:", updatedUser)
+
+    return updatedUser
   }
 
   // Delete user

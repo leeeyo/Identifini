@@ -7,6 +7,18 @@ interface CardListResponse {
   total?: number
 }
 
+interface Lead {
+  _id: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  notes?: string
+  cardUsername: string
+  createdAt: string
+}
+
+// Define the CardService object with all methods
 const CardService = {
   // Get all cards with pagination
   getAllCards: async (page = 1, limit = 10): Promise<CardListResponse> => {
@@ -63,13 +75,24 @@ const CardService = {
   },
 
   // Get leads for a card
-  getCardLeads: async (cardId: string): Promise<any[]> => {
-    return API.get<any[]>(`/api/cards/${cardId}/leads`)
+  getCardLeads: async (username: string): Promise<Lead[]> => {
+    return API.get<Lead[]>(`/api/cards/username/${username}/leads`)
   },
 
   // Submit lead for a card
   submitLead: async (cardUsername: string, leadData: any): Promise<any> => {
     return API.post<any>(`/api/cards/username/${cardUsername}/leads`, leadData)
+  },
+
+  // Delete a lead
+  deleteLead: async (cardUsername: string, leadId: string): Promise<void> => {
+    return API.delete<void>(`/api/cards/username/${cardUsername}/leads/${leadId}`)
+  },
+
+  // Download vCard for a card
+  downloadVCard: async (username: string): Promise<void> => {
+    // This will trigger a direct download through the browser
+    window.location.href = `/api/cards/username/${username}/vcard`
   },
 }
 

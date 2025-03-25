@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef } from "react"
 import "./Overlays.css"
 
 interface MapOverlayProps {
@@ -14,25 +13,7 @@ interface MapOverlayProps {
 }
 
 const MapOverlay: React.FC<MapOverlayProps> = ({ isOpen, onClose, latitude, longitude, address, customMapLink }) => {
-  const mapRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (isOpen && mapRef.current && latitude && longitude) {
-      // In a real implementation, you would initialize a map here
-      // using a library like Leaflet or Google Maps
-
-      // Mock map for now
-      mapRef.current.innerHTML = `
-        <div style="width: 100%; height: 100%; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;">
-          <span>Map at ${latitude}, ${longitude}</span>
-        </div>
-      `
-    }
-  }, [isOpen, latitude, longitude])
-
-  if (!isOpen) return null
-
-  // Determine the Google Maps URL
+  // Determine the Google Maps URL for the "Open in Google Maps" button
   const googleMapsUrl =
     customMapLink ||
     (address
@@ -41,6 +22,21 @@ const MapOverlay: React.FC<MapOverlayProps> = ({ isOpen, onClose, latitude, long
         ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
         : "#")
 
+  // Create a Google Maps Static API URL
+  // Note: In a production app, you would need to add your API key
+  const staticMapUrl =
+    latitude && longitude
+      ? `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=14&size=600x300&markers=color:red%7C${latitude},${longitude}&key=YOUR_API_KEY`
+      : ""
+
+  // Create an OpenStreetMap URL as a fallback (no API key needed)
+  const openStreetMapUrl =
+    latitude && longitude
+      ? `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - 0.01}%2C${latitude - 0.01}%2C${longitude + 0.01}%2C${latitude + 0.01}&layer=mapnik&marker=${latitude}%2C${longitude}`
+      : ""
+
+  if (!isOpen) return null
+
   return (
     <div className="overlay">
       <div className="overlay-content map-overlay-content">
@@ -48,7 +44,32 @@ const MapOverlay: React.FC<MapOverlayProps> = ({ isOpen, onClose, latitude, long
           &times;
         </button>
         <h2>Location</h2>
-        <div ref={mapRef} className="map-container"></div>
+
+        <div className="map-container">
+          {latitude && longitude ? (
+            // Use an iframe with OpenStreetMap (no API key needed)
+            <iframe
+              src={openStreetMapUrl}
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              style={{ border: 0, borderRadius: "8px" }}
+              allowFullScreen
+              aria-hidden="false"
+              tabIndex={0}
+              title="Location Map"
+            />
+          ) : (
+            // Fallback to static representation if no coordinates
+            <div className="static-map-placeholder">
+              <div className="map-info">
+                {address && <p className="map-address">{address}</p>}
+                <p>No map coordinates available</p>
+              </div>
+            </div>
+          )}
+        </div>
+
         <a href={googleMapsUrl} className="map-link" target="_blank" rel="noopener noreferrer">
           Open in Google Maps
         </a>

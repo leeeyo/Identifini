@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import "./Overlays.css"
+import * as FaIcons from "react-icons/fa"
 
 interface GalleryOverlayProps {
   isOpen: boolean
@@ -13,6 +14,12 @@ interface GalleryOverlayProps {
 
 const GalleryOverlay: React.FC<GalleryOverlayProps> = ({ isOpen, onClose, photos, initialIndex = 0 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialIndex)
+    }
+  }, [isOpen, initialIndex])
 
   if (!isOpen) return null
 
@@ -34,36 +41,45 @@ const GalleryOverlay: React.FC<GalleryOverlayProps> = ({ isOpen, onClose, photos
 
   return (
     <div className="overlay gallery-overlay">
+      <div className="gallery-gradient-overlay"></div>
       <div className="overlay-content gallery-overlay-content">
         <button className="close-button" onClick={onClose}>
           &times;
         </button>
-        <h2>Gallery</h2>
+
         <div className="gallery-container">
           {photos.length > 0 ? (
             <>
-              <div className="gallery-image-container">
-                <img
-                  src={photos[currentIndex] || "/placeholder.svg"}
-                  alt={`Gallery item ${currentIndex + 1}`}
-                  className="gallery-image"
-                />
+              <div className="gallery-slides">
+                {photos.map((photo, index) => (
+                  <div
+                    key={index}
+                    className={`gallery-slide ${index === currentIndex ? "active" : ""}`}
+                    style={{
+                      backgroundImage: `url(${photo || "/placeholder.svg"})`,
+                      display: index === currentIndex ? "block" : "none",
+                    }}
+                  />
+                ))}
               </div>
+
               <div className="gallery-controls">
                 <button className="gallery-nav prev" onClick={prevImage}>
-                  <i className="fas fa-chevron-left"></i>
+                  <FaIcons.FaChevronLeft />
                 </button>
+
                 <div className="gallery-indicators">
-                  {photos.map((_photo: string, index: number) => (
+                  {photos.map((_photo, index) => (
                     <span
                       key={index}
-                      className={`indicator ${index === currentIndex ? "active" : ""}`}
+                      className={`gallery-indicator ${index === currentIndex ? "active" : ""}`}
                       onClick={() => goToImage(index)}
-                    ></span>
+                    />
                   ))}
                 </div>
+
                 <button className="gallery-nav next" onClick={nextImage}>
-                  <i className="fas fa-chevron-right"></i>
+                  <FaIcons.FaChevronRight />
                 </button>
               </div>
             </>

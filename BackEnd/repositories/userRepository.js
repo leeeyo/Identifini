@@ -24,7 +24,18 @@ class UserRepository {
 
   // Update user
   async update(id, userData) {
-    return await User.findByIdAndUpdate(id, userData, { new: true }).select("-password")
+    console.log("Repository updating user:", id, "with data:", userData)
+
+    // Use { new: true } to return the updated document
+    // Use { runValidators: true } to ensure validation runs on update
+    const updatedUser = await User.findByIdAndUpdate(id, userData, {
+      new: true,
+      runValidators: true,
+    }).select("-password")
+
+    console.log("Repository updated user result:", updatedUser)
+
+    return updatedUser
   }
 
   // Delete user

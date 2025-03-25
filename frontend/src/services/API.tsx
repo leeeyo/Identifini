@@ -3,38 +3,23 @@ import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse,
 // Create a base axios instance with common configuration
 const apiClient: AxiosInstance = axios.create({
   baseURL: "http://localhost:8080", // Make sure this matches your backend port
-  timeout: 15000, // Increased timeout for debugging
+  timeout: 30000, // Increased timeout for handling larger image data
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
+  maxContentLength: 10 * 1024 * 1024, // 10MB max content length for larger payloads
 })
-
-// Add request logging for debugging
-apiClient.interceptors.request.use(
-  (config) => {
-    console.log(`🚀 Request: ${config.method?.toUpperCase()} ${config.url}`, config)
-    return config
-  },
-  (error) => {
-    console.error("❌ Request Error:", error)
-    return Promise.reject(error)
-  },
-)
 
 // Add response logging for debugging
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`✅ Response: ${response.status} from ${response.config.url}`, response.data)
     return response
   },
   (error: AxiosError) => {
     if (error.response) {
-      console.error(`❌ Response Error: ${error.response.status} from ${error.config?.url}`, error.response.data)
-
       // Handle 401 Unauthorized errors
       if (error.response.status === 401) {
-        console.log("Authentication error detected, redirecting to login")
         // Clear stored auth data
         localStorage.removeItem("user")
         localStorage.removeItem("token")
@@ -44,10 +29,6 @@ apiClient.interceptors.response.use(
           window.location.href = "/login"
         }
       }
-    } else if (error.request) {
-      console.error("❌ No Response Received:", error.request)
-    } else {
-      console.error("❌ Request Setup Error:", error.message)
     }
     return Promise.reject(error)
   },
@@ -70,11 +51,9 @@ const API = {
   // GET request
   get: async <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      console.log(`Making GET request to: ${url}`)
       const response: AxiosResponse<T> = await apiClient.get(url, config)
       return response.data
     } catch (error) {
-      console.error(`GET request to ${url} failed:`, error)
       throw error
     }
   },
@@ -82,11 +61,9 @@ const API = {
   // POST request
   post: async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      console.log(`Making POST request to: ${url}`)
       const response: AxiosResponse<T> = await apiClient.post(url, data, config)
       return response.data
     } catch (error) {
-      console.error(`POST request to ${url} failed:`, error)
       throw error
     }
   },
@@ -94,11 +71,9 @@ const API = {
   // PUT request
   put: async <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      console.log(`Making PUT request to: ${url}`)
       const response: AxiosResponse<T> = await apiClient.put(url, data, config)
       return response.data
     } catch (error) {
-      console.error(`PUT request to ${url} failed:`, error)
       throw error
     }
   },
@@ -106,11 +81,9 @@ const API = {
   // DELETE request
   delete: async <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
     try {
-      console.log(`Making DELETE request to: ${url}`)
       const response: AxiosResponse<T> = await apiClient.delete(url, config)
       return response.data
     } catch (error) {
-      console.error(`DELETE request to ${url} failed:`, error)
       throw error
     }
   },
