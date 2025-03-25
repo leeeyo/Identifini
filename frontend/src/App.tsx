@@ -1,9 +1,11 @@
 "use client"
 
+import "./index.css"
 import type React from "react"
 import { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
+import { ThemeProvider } from "./context/ThemeContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import Navbar from "./components/common/Navbar"
 import Dashboard from "./components/Dashboard"
@@ -33,82 +35,84 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <div className="App">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/view-card/:username"
-              element={
-                <>
-                  {/* No Navbar for CardView */}
-                  <CardView />
-                </>
-              }
-            />
+      <ThemeProvider>
+        <Router>
+          <ScrollToTop />
+          <div className="App">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/view-card/:username"
+                element={
+                  <>
+                    {/* No Navbar for CardView */}
+                    <CardView />
+                  </>
+                }
+              />
 
-            {/* Protected routes */}
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <div className="content">
-                    <Dashboard />
-                  </div>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/create-card"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <div className="content">
-                    <CardCreator />
-                  </div>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/edit-card/:username"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <div className="content">
-                    <CardEditor />
-                  </div>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/view-leads/:username"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <div className="content">
-                    <ViewLeads />
-                  </div>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <div className="content">
-                    <Profile />
-                  </div>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </div>
-      </Router>
+              {/* Protected routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <div className="content">
+                      <Dashboard />
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-card"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <div className="content">
+                      <CardCreator />
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/edit-card/:username"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <div className="content">
+                      <CardEditor />
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/view-leads/:username"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <div className="content">
+                      <ViewLeads />
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <div className="content">
+                      <Profile />
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   )
 }

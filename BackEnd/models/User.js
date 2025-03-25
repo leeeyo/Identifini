@@ -30,6 +30,15 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+  profilePicture: {
+    type: String,
+    required: false,
+  },
+  themePreference: {
+    type: String,
+    enum: ["light", "dark", "system"],
+    default: "system",
+  },
   created_at: {
     type: Date,
     default: Date.now,

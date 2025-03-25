@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import ImageCropper from "../ImageCropper"
 import "./Profile.css"
+import ThemeToggle from "../common/ThemeToggle"
 
 const Profile: React.FC = () => {
   const { user, updateProfile, logout } = useAuth()
@@ -216,6 +217,13 @@ const Profile: React.FC = () => {
               <div className="detail-group">
                 <h3>Account Created</h3>
                 <p>{user.created_at ? new Date(user.created_at).toLocaleDateString() : "Unknown"}</p>
+              </div>
+              <div className="detail-group">
+                <h3>Theme Preference</h3>
+                <div className="flex items-center gap-2">
+                  <p>{user.themePreference || "System default"}</p>
+                  <ThemeToggle className="ml-2" />
+                </div>
               </div>
             </div>
           )}

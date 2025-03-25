@@ -71,6 +71,19 @@ class UserService {
     return updatedUser
   }
 
+  // Update user theme preference
+  async updateThemePreference(id, themePreference) {
+    if (!id) throw new Error("User ID is required")
+    if (!themePreference) throw new Error("Theme preference is required")
+
+    // Validate theme preference
+    if (!["light", "dark", "system"].includes(themePreference)) {
+      throw new Error("Invalid theme preference. Must be 'light', 'dark', or 'system'")
+    }
+
+    return await userRepository.update(id, { themePreference })
+  }
+
   // Delete user
   async deleteUser(id) {
     if (!id) throw new Error("User ID is required")
