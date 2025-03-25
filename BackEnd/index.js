@@ -60,10 +60,12 @@ app.get("/api/cards-test", (req, res) => {
 // Import routes
 const cardRoutes = require("./routes/cardRoutes")
 const authRoutes = require("./routes/authRoutes")
+const publicRoutes = require("./routes/publicRoutes")
 
 // Register routes
 app.use("/api/cards", cardRoutes)
 app.use("/api/auth", authRoutes)
+app.use("/api", publicRoutes) // Register public routes
 
 const PORT = process.env.PORT || 8080
 const server = app.listen(PORT, () => {

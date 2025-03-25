@@ -3,11 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import Navbar from "./components/common/Navbar"
-import SimpleTest from "./components/SimpleTest"
-import ApiDebugger from "./components/ApiDebugger"
 import Dashboard from "./components/Dashboard"
-import CreateCard from "./components/CreateCard"
-import EditCard from "./components/EditCard"
+import CardCreator from "./components/CardCreator"
+import CardEditor from "./components/CardEditor"
 import CardView from "./components/CardView"
 import Login from "./components/auth/Login"
 import Register from "./components/auth/Register"
@@ -27,8 +25,6 @@ const App: React.FC = () => {
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/test" element={<SimpleTest />} />
-              <Route path="/api-debug" element={<ApiDebugger />} />
               <Route path="/view-card/:username" element={<CardView />} />
 
               {/* Protected routes */}
@@ -44,7 +40,7 @@ const App: React.FC = () => {
                 path="/create-card"
                 element={
                   <ProtectedRoute>
-                    <CreateCard />
+                    <CardCreator />
                   </ProtectedRoute>
                 }
               />
@@ -52,7 +48,7 @@ const App: React.FC = () => {
                 path="/edit-card/:username"
                 element={
                   <ProtectedRoute>
-                    <EditCard />
+                    <CardEditor />
                   </ProtectedRoute>
                 }
               />

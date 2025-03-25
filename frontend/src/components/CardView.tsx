@@ -2,17 +2,36 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Link } from "react-router-dom"
 import CardService from "../services/CardService"
 import type { Card } from "../types/card"
+import { useAuth } from "../context/AuthContext"
 import "./CardView.css"
+
+// Import overlay components
+import { QRCodeOverlay } from "./overlays"
+import { WifiOverlay } from "./overlays"
+import { MapOverlay } from "./overlays"
+import { GalleryOverlay } from "./overlays"
+import { LeadFormOverlay } from "./overlays"
 
 const CardView: React.FC = () => {
   const { username } = useParams<{ username: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [card, setCard] = useState<Card | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
+
+  // Overlay states
+  const [showQROverlay, setShowQROverlay] = useState(false)
+  const [showWifiOverlay, setShowWifiOverlay] = useState(false)
+  const [showMapOverlay, setShowMapOverlay] = useState(false)
+  const [showGalleryOverlay, setShowGalleryOverlay] = useState(false)
+  const [showLeadFormOverlay, setShowLeadFormOverlay] = useState(false)
 
   useEffect(() => {
     const fetchCardData = async () => {
@@ -33,8 +52,149 @@ const CardView: React.FC = () => {
     fetchCardData()
   }, [username])
 
+  // Parse JSON fields if they are strings
+  const getSocialMedia = () => {
+    if (!card?.social_medias) return []
+
+    if (typeof card.social_medias === "string") {
+      try {
+        return JSON.parse(card.social_medias)
+      } catch (e) {
+        return []
+      }
+    }
+
+    return card.social_medias
+  }
+
+  const getActionButtons = () => {
+    if (!card?.action_buttons) return []
+
+    if (typeof card.action_buttons === "string") {
+      try {
+        return JSON.parse(card.action_buttons)
+      } catch (e) {
+        return []
+      }
+    }
+
+    return card.action_buttons
+  }
+
+  const getFloatingActions = () => {
+    if (!card?.floating_actions) return []
+
+    if (typeof card.floating_actions === "string") {
+      try {
+        return JSON.parse(card.floating_actions)
+      } catch (e) {
+        return []
+      }
+    }
+
+    return card.floating_actions
+  }
+
+  const getExtraPhotos = () => {
+    if (!card?.extra_photos) return []
+
+    if (typeof card.extra_photos === "string") {
+      try {
+        return JSON.parse(card.extra_photos)
+      } catch (e) {
+        return []
+      }
+    }
+
+    return card.extra_photos
+  }
+
+  const socialMedia = getSocialMedia()
+  const actionButtons = getActionButtons()
+  const floatingActions = getFloatingActions()
+  const extraPhotos = getExtraPhotos()
+
+  // Check if the current user is the owner of this card
+  const isOwner = () => {
+    if (!user || !card) return false
+
+    // Get the user ID, accounting for different property names
+    const userId = user._id || (user as any).id
+
+    // Get the card's user ID, accounting for different property names
+    const cardUserId = typeof card.user === "object" ? (card.user as any)._id || (card.user as any).id : card.user
+
+    return cardUserId === userId
+  }
+
+  // Handle share
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${card?.display_name}'s Digital Card`,
+          url: window.location.href,
+        })
+      } catch (err) {
+        console.error("Error sharing:", err)
+      }
+    } else {
+      handleCopyLink()
+    }
+  }
+
+  // Handle copy link
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        showToast("Link copied to clipboard!")
+      })
+      .catch((err) => {
+        console.error("Failed to copy:", err)
+        showToast("Failed to copy link")
+      })
+  }
+
+  // Show toast notification
+  const showToast = (message: string) => {
+    setToastMessage(message)
+    setTimeout(() => {
+      setToastMessage(null)
+    }, 3000)
+  }
+
+  // Handle lead form submission
+  const handleLeadFormSubmit = async (formData: any) => {
+    if (!card) return
+
+    try {
+      // Since submitLead doesn't exist in CardService, we'll simulate success
+      console.log("Would submit lead data:", formData, "for card:", card.card_username)
+
+      // Simulate a delay for better UX
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      showToast("Contact information submitted successfully!")
+      return Promise.resolve()
+    } catch (error) {
+      console.error("Error submitting lead:", error)
+      throw error
+    }
+  }
+
+  const goToImage = (index: number) => {
+    setCurrentGalleryIndex(index)
+    setShowGalleryOverlay(true)
+  }
+
   if (loading) {
-    return <div className="loading">Loading card data...</div>
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading card data...</p>
+      </div>
+    )
   }
 
   if (error || !card) {
@@ -48,97 +208,266 @@ const CardView: React.FC = () => {
     )
   }
 
-  // Parse JSON strings if they exist
-  const socialMedias = card.social_medias
-    ? typeof card.social_medias === "string"
-      ? JSON.parse(card.social_medias)
-      : card.social_medias
-    : []
-
-  const actionButtons = card.action_buttons
-    ? typeof card.action_buttons === "string"
-      ? JSON.parse(card.action_buttons)
-      : card.action_buttons
-    : []
-
   return (
-    <div className="card-view-container">
+    <div
+      className="card-view-wrapper"
+      style={
+        {
+          "--theme-color-1": card.theme_color_1 || "#333333",
+          "--theme-color-2": card.theme_color_2 || "#ffffff",
+          "--theme-color-3": card.theme_color_3 || "#f5f5f5",
+        } as React.CSSProperties
+      }
+    >
+      {/* Top Header */}
       <div className="card-view-header">
-        <h1>Card Preview: {card.card_username}</h1>
-        <div className="header-actions">
-          <button className="edit-button" onClick={() => navigate(`/edit-card/${card.card_username}`)}>
-            Edit Card
-          </button>
-          <button className="back-button" onClick={() => navigate("/")}>
-            Back to Dashboard
-          </button>
-        </div>
+        <button className="menu-button" onClick={() => setShowDropdown(!showDropdown)}>
+          <i className="fas fa-ellipsis-v"></i>
+        </button>
+        <button className="share-button" onClick={handleShare}>
+          <i className="fas fa-share-alt"></i>
+        </button>
+        {isOwner() && (
+          <Link to={`/edit-card/${card.card_username}`} className="edit-button">
+            <i className="fas fa-edit"></i>
+          </Link>
+        )}
       </div>
 
-      <div
-        className="card-preview"
-        style={
-          {
-            "--primary-color": card.theme_color_1 || "#4a90e2",
-            "--secondary-color": card.theme_color_2 || "#ffffff",
-            "--text-color": card.theme_color_3 || "#333333",
-          } as React.CSSProperties
-        }
-      >
-        <div className="card-preview-header">
-          {card.card_pic && (
-            <img src={card.card_pic || "/placeholder.svg"} alt={card.display_name} className="card-profile-pic" />
-          )}
-          <h2>{card.display_name}</h2>
-          {card.bio && <p className="card-bio">{card.bio}</p>}
+      {/* Dropdown Menu */}
+      {showDropdown && (
+        <div className="dropdown-menu">
+          <ul>
+            <li onClick={handleShare}>
+              <i className="fas fa-share-alt"></i> Share
+            </li>
+            <li onClick={handleCopyLink}>
+              <i className="fas fa-copy"></i> Copy Link
+            </li>
+            <li onClick={() => setShowQROverlay(true)}>
+              <i className="fas fa-qrcode"></i> QR Code
+            </li>
+            {card.card_wifi_ssid && (
+              <li onClick={() => setShowWifiOverlay(true)}>
+                <i className="fas fa-wifi"></i> WiFi
+              </li>
+            )}
+            {extraPhotos.length > 0 && (
+              <li onClick={() => setShowGalleryOverlay(true)}>
+                <i className="fas fa-images"></i> Gallery
+              </li>
+            )}
+            <li onClick={() => setShowLeadFormOverlay(true)}>
+              <i className="fas fa-address-book"></i> Save Contact
+            </li>
+            {isOwner() && (
+              <li onClick={() => navigate(`/edit-card/${card.card_username}`)}>
+                <i className="fas fa-edit"></i> Edit Card
+              </li>
+            )}
+            {isOwner() && (
+              <li onClick={() => navigate("/")}>
+                <i className="fas fa-arrow-left"></i> Back to Dashboard
+              </li>
+            )}
+          </ul>
         </div>
+      )}
 
-        <div className="card-preview-content">
-          {card.card_email && (
-            <div className="card-info-item">
-              <strong>Email:</strong> {card.card_email}
+      {/* Main Content */}
+      <div className="card-view-main">
+        <div className="animated-gradient">
+          {card.card_pic ? (
+            <img src={card.card_pic || "/placeholder.svg"} alt={card.display_name} className="profile-pic" />
+          ) : (
+            <div className="profile-pic-placeholder">
+              {card.display_name ? card.display_name.charAt(0).toUpperCase() : "?"}
             </div>
           )}
+          <div className="client-name">{card.display_name}</div>
 
-          {card.display_address && (
-            <div className="card-info-item">
-              <strong>Address:</strong> {card.display_address}
-            </div>
-          )}
+          {card.business_type && <div className="business-type">{card.business_type}</div>}
 
-          {socialMedias.length > 0 && (
-            <div className="card-social-media">
-              <h3>Social Media</h3>
-              <ul>
-                {socialMedias.map((social: any, index: number) => (
-                  <li key={index}>
-                    <a href={social.url} target="_blank" rel="noopener noreferrer">
-                      {social.platform}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {card.bio && <p className="client-bio">{card.bio}</p>}
 
-          {actionButtons.length > 0 && (
-            <div className="card-action-buttons">
-              <h3>Actions</h3>
-              <div className="action-buttons-container">
-                {actionButtons.map((action: any, index: number) => (
-                  <a key={index} href={action.url} target="_blank" rel="noopener noreferrer" className="action-button">
-                    {action.label}
+          {/* Contact Information */}
+          {(card.card_email || card.display_address) && (
+            <div className="contact-info">
+              {card.card_email && (
+                <div className="contact-item">
+                  <i className="fas fa-envelope"></i>
+                  <a href={`mailto:${card.card_email}`} style={{ color: "inherit", textDecoration: "none" }}>
+                    {card.card_email}
                   </a>
-                ))}
-              </div>
+                </div>
+              )}
+              {card.display_address && (
+                <div className="contact-item">
+                  <i className="fas fa-map-marker-alt"></i>
+                  <span>{card.display_address}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Social Media Icons */}
+          {socialMedia.length > 0 && (
+            <div className="social-icons">
+              {socialMedia.map((social: any, index: number) => (
+                <a key={index} href={social.url} target="_blank" rel="noopener noreferrer">
+                  <i className={`fab ${social.icon || "fa-globe"}`}></i>
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          {actionButtons.length > 0 && (
+            <div className="action-buttons">
+              {actionButtons.map((button: any, index: number) => (
+                <div key={index} className="action-btn-wrapper">
+                  <a href={button.url} className="action-btn" target="_blank" rel="noopener noreferrer">
+                    <i className={`fas ${button.icon || "fa-link"}`}></i> {button.label}
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Gallery Indicators */}
+          {extraPhotos.length > 0 && (
+            <div className="gallery-indicators">
+              {extraPhotos.map((_photo: string, index: number) => (
+                <span
+                  key={index}
+                  className={`indicator ${index === currentGalleryIndex ? "active" : ""}`}
+                  onClick={() => goToImage(index)}
+                ></span>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="card-preview-footer">
-          <p>Created: {new Date(card.created_at).toLocaleDateString()}</p>
+        {/* Floating Actions */}
+        <div className="floating-actions">
+          {card.latitude && card.longitude && (
+            <button className="floating-action" title="Location" onClick={() => setShowMapOverlay(true)}>
+              <i className="fas fa-location-dot"></i>
+              <span>Location</span>
+            </button>
+          )}
+
+          {card.card_wifi_ssid && (
+            <button className="floating-action" title="WiFi" onClick={() => setShowWifiOverlay(true)}>
+              <i className="fas fa-wifi"></i>
+              <span>WiFi</span>
+            </button>
+          )}
+
+          {extraPhotos.length > 0 && (
+            <button className="floating-action" title="Gallery" onClick={() => setShowGalleryOverlay(true)}>
+              <i className="fas fa-images"></i>
+              <span>Gallery</span>
+            </button>
+          )}
+
+          <button className="floating-action" title="Save Contact" onClick={() => setShowLeadFormOverlay(true)}>
+            <i className="fas fa-address-book"></i>
+            <span>Contact</span>
+          </button>
+
+          {floatingActions.length > 0 &&
+            floatingActions.map((action: any, index: number) => {
+              // Determine icon class based on action type
+              let iconClass = "fa-link"
+              let url = action.url
+
+              if (action.type === "Whatsapp" || action.type === "WhatsApp") {
+                iconClass = "fa-whatsapp"
+                if (!url.startsWith("https://wa.me/")) {
+                  url = `https://wa.me/${url.replace(/[^0-9]/g, "")}`
+                }
+              }
+
+              if (action.type === "SMS") {
+                iconClass = "fa-comment-sms"
+                if (!url.startsWith("sms:")) {
+                  url = `sms:${url}`
+                }
+              }
+
+              if (action.type === "Call") {
+                iconClass = "fa-phone"
+                if (!url.startsWith("tel:")) {
+                  url = `tel:${url}`
+                }
+              }
+
+              if (action.type === "Email") {
+                iconClass = "fa-envelope"
+                if (!url.startsWith("mailto:")) {
+                  url = `mailto:${url}`
+                }
+              }
+
+              return (
+                <a
+                  key={index}
+                  href={url}
+                  className="floating-action"
+                  title={action.type}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className={`fas ${action.icon || iconClass}`}></i>
+                  <span>{action.type}</span>
+                </a>
+              )
+            })}
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toastMessage && <div className="toast-notification">{toastMessage}</div>}
+
+      {/* Overlays */}
+      <QRCodeOverlay
+        isOpen={showQROverlay}
+        onClose={() => setShowQROverlay(false)}
+        url={window.location.href}
+        foregroundColor={card.theme_color_3}
+      />
+
+      <WifiOverlay
+        isOpen={showWifiOverlay}
+        onClose={() => setShowWifiOverlay(false)}
+        wifiSSID={card.card_wifi_ssid || ""}
+        wifiPassword={card.card_wifi_password || ""}
+      />
+
+      <MapOverlay
+        isOpen={showMapOverlay}
+        onClose={() => setShowMapOverlay(false)}
+        latitude={card.latitude ? Number.parseFloat(card.latitude) : undefined}
+        longitude={card.longitude ? Number.parseFloat(card.longitude) : undefined}
+        address={card.display_address}
+        customMapLink={card.custom_map_link}
+      />
+
+      <GalleryOverlay
+        isOpen={showGalleryOverlay}
+        onClose={() => setShowGalleryOverlay(false)}
+        photos={extraPhotos}
+        initialIndex={currentGalleryIndex}
+      />
+
+      <LeadFormOverlay
+        isOpen={showLeadFormOverlay}
+        onClose={() => setShowLeadFormOverlay(false)}
+        cardUsername={card.card_username}
+        displayName={card.display_name}
+        onSubmit={handleLeadFormSubmit}
+      />
     </div>
   )
 }

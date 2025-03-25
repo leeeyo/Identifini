@@ -1,0 +1,86 @@
+/* CardPreview.css */
+
+.card-preview-container {
+    /* Smaller max width so it doesn’t take too much space */
+    max-width: 280px;
+    margin: 0 auto;
+    border-radius: 8px;
+    background-color: var(--secondary-color, #ffffff);
+    color: var(--text-color, #333333);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+  }
+  
+  /* Title above the card preview */
+  .preview-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  /* The main wrapper for the card preview content */
+  .card-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .card-preview-header {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  /* Profile image */
+  .card-profile-pic {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color, #4a90e2);
+    margin-bottom: 10px;
+  }
+  
+  /* Placeholder if no profile pic */
+  .card-profile-pic-placeholder {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: var(--primary-color, #4a90e2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin-bottom: 10px;
+  }
+  
+  /* Name text */
+  .card-preview-header h2 {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+  
+  /* Main content (bio, email, address) */
+  .card-preview-content {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .card-bio {
+    margin: 8px 0;
+    font-style: italic;
+    opacity: 0.9;
+  }
+  
+  .card-info-item {
+    margin: 5px 0;
+  }
+  
+  /* Footer with the @username */
+  .card-preview-footer {
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    margin-top: 10px;
+  }
+  

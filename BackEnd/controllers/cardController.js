@@ -124,6 +124,32 @@ class CardController {
       res.status(400).json({ error: error.message })
     }
   }
+
+  // Submit a lead for a card
+  async submitCardLead(req, res) {
+    try {
+      const { username } = req.params
+      const leadData = req.body
+
+      console.log(`Received lead for card ${username}:`, leadData)
+
+      // In a real implementation, you would save this lead to the database
+      // For now, we'll just return a success response
+
+      return res.status(201).json({
+        success: true,
+        message: "Lead submitted successfully",
+        data: {
+          cardUsername: username,
+          leadData,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    } catch (error) {
+      console.error("Error in submitCardLead:", error)
+      res.status(500).json({ error: error.message })
+    }
+  }
 }
 
 // Make sure we're exporting the controller correctly

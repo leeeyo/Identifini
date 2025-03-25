@@ -1,13 +1,17 @@
 const express = require("express")
 const router = express.Router()
 const cardController = require("../controllers/cardController")
+const { protect } = require("../middleware/authMiddleware")
 
 // Log available controller methods for debugging
 console.log("Available controller methods:", Object.keys(cardController))
 
-// GET /api/cards - Get all cards
+// Apply authentication middleware to all routes
+router.use(protect)
+
+// GET /api/cards - Get all cards with pagination
 router.get("/", (req, res) => {
-  console.log("GET /api/cards route hit")
+  console.log("GET /api/cards route hit with query:", req.query)
   return cardController.fetchAllCards(req, res)
 })
 
@@ -51,6 +55,18 @@ router.delete("/:id", (req, res) => {
 router.post("/:id/duplicate", (req, res) => {
   console.log("POST /api/cards/:id/duplicate route hit", req.params.id)
   return cardController.duplicateCard(req, res)
+})
+
+// GET /api/cards/:id/leads - Get leads for a card
+router.get("/:id/leads", (req, res) => {
+  console.log("GET /api/cards/:id/leads route hit", req.params.id)
+  return cardController.getCardLeads(req, res)
+})
+
+// POST /api/cards/username/:username/leads - Submit lead for a card
+router.post("/username/:username/leads", (req, res) => {
+  console.log("POST /api/cards/username/:username/leads route hit", req.params.username)
+  return cardController.submitCardLead(req, res)
 })
 
 module.exports = router

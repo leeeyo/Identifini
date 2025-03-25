@@ -31,6 +31,19 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response) {
       console.error(`❌ Response Error: ${error.response.status} from ${error.config?.url}`, error.response.data)
+
+      // Handle 401 Unauthorized errors
+      if (error.response.status === 401) {
+        console.log("Authentication error detected, redirecting to login")
+        // Clear stored auth data
+        localStorage.removeItem("user")
+        localStorage.removeItem("token")
+
+        // Redirect to login page if not already there
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = "/login"
+        }
+      }
     } else if (error.request) {
       console.error("❌ No Response Received:", error.request)
     } else {

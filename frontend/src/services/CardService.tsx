@@ -8,11 +8,11 @@ interface CardListResponse {
 }
 
 const CardService = {
-  // Get all cards
-  getAllCards: async (): Promise<CardListResponse> => {
+  // Get all cards with pagination
+  getAllCards: async (page = 1, limit = 10): Promise<CardListResponse> => {
     try {
-      console.log("Trying to fetch cards from /api/cards")
-      return await API.get<CardListResponse>("/api/cards")
+      console.log(`Trying to fetch cards from /api/cards?page=${page}&limit=${limit}`)
+      return await API.get<CardListResponse>(`/api/cards?page=${page}&limit=${limit}`)
     } catch (error) {
       console.error("Regular endpoint failed, trying test endpoint")
 
@@ -60,6 +60,16 @@ const CardService = {
   // Duplicate a card
   duplicateCard: async (id: string): Promise<Card> => {
     return API.post<Card>(`/api/cards/${id}/duplicate`)
+  },
+
+  // Get leads for a card
+  getCardLeads: async (cardId: string): Promise<any[]> => {
+    return API.get<any[]>(`/api/cards/${cardId}/leads`)
+  },
+
+  // Submit lead for a card
+  submitLead: async (cardUsername: string, leadData: any): Promise<any> => {
+    return API.post<any>(`/api/cards/username/${cardUsername}/leads`, leadData)
   },
 }
 
