@@ -4,13 +4,15 @@ import type React from "react"
 import { createContext, useState, useEffect, useContext, useCallback } from "react"
 import API from "../services/API"
 
-interface User {
+// Export the User interface so it can be imported elsewhere
+export interface User {
   _id: string
   username: string
   name?: string
   email?: string
   role: string
   profilePicture?: string
+  themePreference?: "light" | "dark" | "system"
   created_at?: string
 }
 
@@ -23,6 +25,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<void>
   logout: () => void
   updateProfile: (userData: Partial<User>) => Promise<void>
+  updateThemePreference: (theme: "light" | "dark" | "system") => Promise<void>
 }
 
 interface RegisterData {
@@ -30,6 +33,7 @@ interface RegisterData {
   password: string
   name?: string
   email?: string
+  themePreference?: "light" | "dark" | "system"
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -122,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: userData.name,
         email: userData.email,
         profilePicture: userData.profilePicture,
+        themePreference: userData.themePreference,
       })
 
       console.log("Profile update response:", response)
@@ -136,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...response,
         // Ensure profilePicture is explicitly set from the response or userData
         profilePicture: response.profilePicture || userData.profilePicture || user?.profilePicture,
+        themePreference: response.themePreference || userData.themePreference || user?.themePreference,
       }
 
       console.log("Updated user object:", updatedUser)
@@ -157,6 +163,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  // Update theme preference function
+  const updateThemePreference = async (theme: "light" | "dark" | "system") => {
+    try {
+      const response = await API.put<{ themePreference: "light" | "dark" | "system" }>("/api/auth/theme", {
+        themePreference: theme,
+      })
+
+      if (!response) {
+        throw new Error("No response received from server")
+      }
+
+      // Update the user object with the new theme preference
+      if (user) {
+        const updatedUser = {
+          ...user,
+          themePreference: response.themePreference,
+        }
+
+        setUser(updatedUser)
+        localStorage.setItem("user", JSON.stringify(updatedUser))
+
+        // Force a re-render of components that use the user object
+        const event = new Event("storage")
+        window.dispatchEvent(event)
+      }
+
+      return Promise.resolve()
+    } catch (error) {
+      console.error("Update theme preference error:", error)
+      throw error
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -168,6 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         updateProfile,
+        updateThemePreference,
       }}
     >
       {children}

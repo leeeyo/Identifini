@@ -8,12 +8,17 @@ const apiClient: AxiosInstance = axios.create({
     "Content-Type": "application/json",
     Accept: "application/json",
   },
-  maxContentLength: 10 * 1024 * 1024, // 10MB max content length for larger payloads
+  maxContentLength: 20 * 1024 * 1024, // 20MB max content length for larger payloads
+  maxBodyLength: 20 * 1024 * 1024, // Add this for handling larger request bodies
 })
 
 // Add response logging for debugging
 apiClient.interceptors.response.use(
   (response) => {
+    // If the response contains image data, ensure it's properly processed
+    if (response.headers["content-type"]?.includes("image/")) {
+      return response
+    }
     return response
   },
   (error: AxiosError) => {

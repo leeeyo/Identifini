@@ -114,6 +114,24 @@
   gap: 15px;
 }
 
+/* Add more visible styling for the theme toggle */
+.theme-toggle {
+  color: rgb(var(--color-card-foreground));
+  background-color: rgba(var(--color-muted), 0.2);
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: rgba(var(--color-muted), 0.4);
+  transform: scale(1.05);
+}
+
+.theme-toggle-navbar {
+  margin-right: 10px;
+  height: 36px;
+  width: 36px;
+}
+
 .user-info {
   display: flex;
   align-items: center;
@@ -152,6 +170,22 @@
   background-size: cover;
   background-position: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Add styles for the fallback initial when image fails to load */
+.user-avatar-image.profile-picture-error {
+  background-image: none !important;
+  background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-accent)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fallback-initial {
+  color: rgb(var(--color-primary-foreground));
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .user-name {
@@ -297,6 +331,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+
+  .theme-toggle-navbar {
+    margin-right: 0;
+    margin-bottom: 10px;
+    align-self: flex-start;
   }
 
   .user-info {

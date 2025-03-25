@@ -24,6 +24,14 @@ const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDup
               src={card.card_pic || "/placeholder.svg"}
               alt={card.display_name}
               className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+              onError={(e) => {
+                // If image fails to load, replace with initial
+                e.currentTarget.style.display = "none"
+                const nextElement = e.currentTarget.nextElementSibling;
+                if (nextElement && nextElement instanceof HTMLElement) {
+                  nextElement.style.display = "flex";
+                }
+              }}
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-lg shadow-sm">
