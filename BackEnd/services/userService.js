@@ -1,126 +1,79 @@
+const userRepository = require("../repositories/userRepository")
+const bcrypt = require("bcryptjs")
+
 class UserService {
-  constructor(userRepository) {
-    this.userRepository = userRepository
-  }
-
+  // Register a new user
   async registerUser(userData) {
-    // Basic validation (can be expanded)
-    if (!userData.email || !userData.password) {
-      throw new Error("Email and password are required")
+    if (!userData) throw new Error("User data is required")
+
+    // Check if username or email already exists
+    const existingUsername = await userRepository.getByUsername(userData.username)
+    if (existingUsername) throw new Error("Username already exists")
+
+    if (userData.email) {
+      const existingEmail = await userRepository.getByEmail(userData.email)
+      if (existingEmail) throw new Error("Email already exists")
     }
 
-    // Check if user already exists
-    const existingUser = await this.userRepository.getByEmail(userData.email)
-    if (existingUser) {
-      throw new Error("User already exists")
-    }
-
-    // Hash password (example - use bcrypt in production)
-    const hashedPassword = userData.password + "hashed" // Dummy hashing
-
-    userData.password = hashedPassword
-
-    // Create user
-    const newUser = await this.userRepository.create(userData)
-    return newUser
+    return await userRepository.create(userData)
   }
 
-  async loginUser(email, password) {
-    if (!email || !password) {
-      throw new Error("Email and password are required")
-    }
+  // Login user
+  async loginUser(username, password) {
+    if (!username || !password) throw new Error("Username and password are required")
 
-    const user = await this.userRepository.getByEmail(email)
-    if (!user) {
-      throw new Error("Invalid credentials")
-    }
+    // Find user by username
+    const user = await userRepository.getByUsername(username)
+    if (!user) throw new Error("Invalid credentials")
 
-    // Validate password (example - use bcrypt in production)
-    const hashedPassword = password + "hashed" // Dummy hashing
-    if (user.password !== hashedPassword) {
-      throw new Error("Invalid credentials")
-    }
+    // Check password
+    const isMatch = await user.comparePassword(password)
+    if (!isMatch) throw new Error("Invalid credentials")
 
-    return user
+    const userResponse = user.toObject()
+    delete userResponse.password
+
+    return userResponse
   }
 
+  // Get user by ID
   async getUserById(id) {
-    if (!id) {
-      throw new Error("ID is required")
-    }
+    if (!id) throw new Error("User ID is required")
 
-    const user = await this.userRepository.getById(id)
-    if (!user) {
-      throw new Error("User not found")
-    }
+    const user = await userRepository.getById(id)
+    if (!user) throw new Error("User not found")
 
     return user
   }
 
+  // Update user
   async updateUser(id, userData) {
-    if (!id) {
-      throw new Error("ID is required")
+    if (!id) throw new Error("User ID is required")
+    if (!userData) throw new Error("User data is required")
+
+    console.log("Updating user with data:", userData)
+
+    if (userData.password) {
+      const salt = await bcrypt.genSalt(10)
+      userData.password = await bcrypt.hash(userData.password, salt)
     }
 
-    const updatedUser = await this.userRepository.update(id, userData)
-    if (!updatedUser) {
-      throw new Error("User not found")
-    }
+    userData.updated_at = Date.now()
+
+    const updatedUser = await userRepository.update(id, userData)
+
+    console.log("User updated successfully:", updatedUser)
 
     return updatedUser
   }
 
+  // Delete user
   async deleteUser(id) {
-    if (!id) {
-      throw new Error("ID is required")
-    }
+    if (!id) throw new Error("User ID is required")
 
-    const deletedUser = await this.userRepository.delete(id)
-    if (!deletedUser) {
-      throw new Error("User not found")
-    }
-
-    return deletedUser
-  }
-
-  // Add this method after the deleteUser method
-  // Create a sub-user
-  async createSubUser(parentUserId, subUserData) {
-    if (!parentUserId) throw new Error("Parent user ID is required")
-    if (!subUserData) throw new Error("Sub-user data is required")
-
-    console.log("Creating sub-user for parent:", parentUserId, "with data:", subUserData)
-
-    // Get the parent user
-    const parentUser = await this.getUserById(parentUserId)
-    if (!parentUser) throw new Error("Parent user not found")
-
-    // Set the sub-user role and parent user
-    subUserData.role = "sub-user"
-    subUserData.parentUser = parentUserId
-
-    // Create the sub-user
-    const subUser = await this.registerUser(subUserData)
-
-    // Add the sub-user to the parent user's subUsers array
-    await this.userRepository.addSubUser(parentUserId, subUser._id)
-
-    return subUser
-  }
-
-  // Get all sub-users for a parent user
-  async getSubUsers(parentUserId) {
-    if (!parentUserId) throw new Error("Parent user ID is required")
-
-    console.log("Getting sub-users for parent:", parentUserId)
-
-    // Get the parent user with populated sub-users
-    const parentUser = await this.userRepository.getByIdWithSubUsers(parentUserId)
-    if (!parentUser) throw new Error("Parent user not found")
-
-    return parentUser.subUsers || []
+    return await userRepository.delete(id)
   }
 }
 
-module.exports = UserService
+module.exports = new UserService()
 
