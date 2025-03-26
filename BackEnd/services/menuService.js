@@ -145,7 +145,49 @@ class MenuService {
 
     return menu
   }
+  
+  // Get all menu items for a specific menu
+async getAllMenuItems(userId, cardId, menuId) {
+  // Verify card exists and belongs to the user
+  const card = await cardRepository.getByIdAndUserId(cardId, userId)
+  if (!card) {
+    throw new Error("Card not found or you do not have permission to access it")
+  }
+
+  // Get the menu
+  const menu = await menuRepository.findByIdAndCardId(menuId, cardId)
+  if (!menu) {
+    throw new Error("Menu not found")
+  }
+
+  return menu.items
 }
+
+// Get a specific menu item
+async getMenuItem(userId, cardId, menuId, itemId) {
+  // Verify card exists and belongs to the user
+  const card = await cardRepository.getByIdAndUserId(cardId, userId)
+  if (!card) {
+    throw new Error("Card not found or you do not have permission to access it")
+  }
+
+  // Get the menu
+  const menu = await menuRepository.findByIdAndCardId(menuId, cardId)
+  if (!menu) {
+    throw new Error("Menu not found")
+  }
+
+  // Find the item
+  const item = menu.items.find((item) => item._id.toString() === itemId)
+  if (!item) {
+    throw new Error("Menu item not found")
+  }
+
+  return item
+}
+
+}
+
 
 module.exports = new MenuService()
 

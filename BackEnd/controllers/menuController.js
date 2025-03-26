@@ -104,6 +104,53 @@ exports.deleteMenu = async (req, res) => {
   }
 }
 
+// Get all menu items for a menu
+exports.getAllMenuItems = async (req, res) => {
+  console.log("Received request for cardId:", req.params.cardId)
+  console.log("Received request for menuId:", req.params.menuId)
+
+  try {
+    const { cardId, menuId } = req.params
+    const items = await menuService.getAllMenuItems(req.user._id, cardId, menuId)
+
+    res.status(200).json({
+      success: true,
+      count: items.length,
+      data: items,
+    })
+  } catch (error) {
+    console.error("Error fetching menu items:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch menu items",
+      error: error.message,
+    })
+  }
+}
+
+
+// Get a specific menu item
+exports.getMenuItem = async (req, res) => {
+  try {
+    const { cardId, menuId, itemId } = req.params
+    const item = await menuService.getMenuItem(req.user._id, cardId, menuId, itemId)
+
+    res.status(200).json({
+      success: true,
+      data: item,
+    })
+  } catch (error) {
+    console.error("Error fetching menu item:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch menu item",
+      error: error.message,
+    })
+  }
+}
+
+
+
 // Add a menu item to a menu
 exports.addMenuItem = async (req, res) => {
   try {
