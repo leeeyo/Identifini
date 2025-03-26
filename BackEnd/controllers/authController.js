@@ -6,8 +6,7 @@ const axios = require("axios")
 // JWT secret key from environment variables
 const JWT_SECRET = process.env.JWT_SECRET
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
-const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID)
@@ -95,7 +94,7 @@ class AuthController {
     }
   }
 
-  // Social login (Google, Facebook)
+  // Social login (Google)
   async socialLogin(req, res) {
     try {
       const { provider, token, userData } = req.body
@@ -121,21 +120,6 @@ class AuthController {
           profilePicture: payload.picture,
           provider: "google",
           providerId: payload.sub,
-        }
-      } else if (provider === "facebook") {
-        // Verify Facebook token
-        const response = await axios.get(
-          `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${token}`,
-        )
-
-        if (response.data) {
-          socialUser = {
-            email: response.data.email,
-            name: response.data.name,
-            profilePicture: response.data.picture?.data?.url,
-            provider: "facebook",
-            providerId: response.data.id,
-          }
         }
       } else {
         return res.status(400).json({ error: "Invalid provider" })
@@ -182,20 +166,7 @@ class AuthController {
     }
   }
 
-  // Facebook OAuth redirect
-  async facebookAuth(req, res) {
-    try {
-      const redirectUrl = `https://www.facebook.com/v12.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(process.env.FRONTEND_URL + "/auth/facebook/callback")}&scope=email,public_profile`
-      res.redirect(redirectUrl)
-    } catch (error) {
-      console.error("Error in Facebook OAuth redirect:", error)
-      res.redirect(
-        `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent(error.message || "Failed to authenticate with Facebook")}`,
-      )
-    }
-  }
-
-  // Add OAuth callback handlers
+  // Add OAuth callback handler for Google
   async googleCallback(req, res) {
     try {
       const { code } = req.query
@@ -209,7 +180,7 @@ class AuthController {
       // Exchange code for tokens
       const oauth2Client = new OAuth2Client(
         GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
+        GOOGLE_CLIENT_SECRET,
         `${process.env.FRONTEND_URL}/auth/google/callback`,
       )
 
@@ -245,7 +216,7 @@ class AuthController {
       const jwtToken = generateToken(user._id)
 
       // Redirect to frontend with token
-      res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?provider=google&token=${jwtToken}`)
+      res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${jwtToken}`)
     } catch (error) {
       console.error("Error in Google OAuth callback:", error)
       res.redirect(
@@ -254,59 +225,131 @@ class AuthController {
     }
   }
 
-  async facebookCallback(req, res) {
-    try {
-      const { code } = req.query
+  // Facebook OAuth redirect
+  // async facebookAuth(req, res) {
+  //   try {
+  //     const redirectUrl = `https://www.facebook.com/v12.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(process.env.FRONTEND_URL + "/auth/facebook/callback")}&scope=email,public_profile`
+  //     res.redirect(redirectUrl)
+  //   } catch (error) {
+  //     console.error("Error in Facebook OAuth redirect:", error)
+  //     res.redirect(
+  //       `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent(error.message || "Failed to authenticate with Facebook")}`,
+  //     )
+  //   }
+  // }
 
-      if (!code) {
-        return res.redirect(
-          `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent("Authorization code is missing")}`,
-        )
-      }
+  // Add OAuth callback handlers
+  // async googleCallback(req, res) {
+  //   try {
+  //     const { code } = req.query
 
-      // Exchange code for access token
-      const tokenResponse = await axios.get(
-        `https://graph.facebook.com/v12.0/oauth/access_token?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(process.env.FRONTEND_URL + "/auth/facebook/callback")}&client_secret=${FACEBOOK_APP_SECRET}&code=${code}`,
-      )
+  //     if (!code) {
+  //       return res.redirect(
+  //         `${process.env.FRONTEND_URL}/auth/google/callback?error=${encodeURIComponent("Authorization code is missing")}`,
+  //       )
+  //     }
 
-      const { access_token } = tokenResponse.data
+  //     // Exchange code for tokens
+  //     const oauth2Client = new OAuth2Client(
+  //       GOOGLE_CLIENT_ID,
+  //       process.env.GOOGLE_CLIENT_SECRET,
+  //       `${process.env.FRONTEND_URL}/auth/google/callback`,
+  //     )
 
-      if (!access_token) {
-        return res.redirect(
-          `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent("Failed to get access token")}`,
-        )
-      }
+  //     const { tokens } = await oauth2Client.getToken(code)
+  //     const idToken = tokens.id_token
 
-      // Get user profile
-      const profileResponse = await axios.get(
-        `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${access_token}`,
-      )
+  //     if (!idToken) {
+  //       return res.redirect(
+  //         `${process.env.FRONTEND_URL}/auth/google/callback?error=${encodeURIComponent("Failed to get ID token")}`,
+  //       )
+  //     }
 
-      const profile = profileResponse.data
+  //     // Verify the ID token
+  //     const ticket = await oauth2Client.verifyIdToken({
+  //       idToken,
+  //       audience: GOOGLE_CLIENT_ID,
+  //     })
 
-      // Find or create user
-      const socialUser = {
-        email: profile.email,
-        name: profile.name,
-        profilePicture: profile.picture?.data?.url,
-        provider: "facebook",
-        providerId: profile.id,
-      }
+  //     const payload = ticket.getPayload()
 
-      const user = await userService.findOrCreateSocialUser(socialUser)
+  //     // Find or create user
+  //     const socialUser = {
+  //       email: payload.email,
+  //       name: payload.name,
+  //       profilePicture: payload.picture,
+  //       provider: "google",
+  //       providerId: payload.sub,
+  //     }
 
-      // Generate JWT token
-      const jwtToken = generateToken(user._id)
+  //     const user = await userService.findOrCreateSocialUser(socialUser)
 
-      // Redirect to frontend with token
-      res.redirect(`${process.env.FRONTEND_URL}/auth/facebook/callback?provider=facebook&token=${jwtToken}`)
-    } catch (error) {
-      console.error("Error in Facebook OAuth callback:", error)
-      res.redirect(
-        `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent(error.message || "Failed to authenticate with Facebook")}`,
-      )
-    }
-  }
+  //     // Generate JWT token
+  //     const jwtToken = generateToken(user._id)
+
+  //     // Redirect to frontend with token
+  //     res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?provider=google&token=${jwtToken}`)
+  //   } catch (error) {
+  //     console.error("Error in Google OAuth callback:", error)
+  //     res.redirect(
+  //       `${process.env.FRONTEND_URL}/auth/google/callback?error=${encodeURIComponent(error.message || "Failed to authenticate with Google")}`,
+  //     )
+  //   }
+  // }
+
+  // async facebookCallback(req, res) {
+  //   try {
+  //     const { code } = req.query
+
+  //     if (!code) {
+  //       return res.redirect(
+  //         `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent("Authorization code is missing")}`,
+  //       )
+  //     }
+
+  //     // Exchange code for access token
+  //     const tokenResponse = await axios.get(
+  //       `https://graph.facebook.com/v12.0/oauth/access_token?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(process.env.FRONTEND_URL + "/auth/facebook/callback")}&client_secret=${FACEBOOK_APP_SECRET}&code=${code}`,
+  //     )
+
+  //     const { access_token } = tokenResponse.data
+
+  //     if (!access_token) {
+  //       return res.redirect(
+  //         `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent("Failed to get access token")}`,
+  //       )
+  //     }
+
+  //     // Get user profile
+  //     const profileResponse = await axios.get(
+  //       `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${access_token}`,
+  //     )
+
+  //     const profile = profileResponse.data
+
+  //     // Find or create user
+  //     const socialUser = {
+  //       email: profile.email,
+  //       name: profile.name,
+  //       profilePicture: profile.picture?.data?.url,
+  //       provider: "facebook",
+  //       providerId: profile.id,
+  //     }
+
+  //     const user = await userService.findOrCreateSocialUser(socialUser)
+
+  //     // Generate JWT token
+  //     const jwtToken = generateToken(user._id)
+
+  //     // Redirect to frontend with token
+  //     res.redirect(`${process.env.FRONTEND_URL}/auth/facebook/callback?provider=facebook&token=${jwtToken}`)
+  //   } catch (error) {
+  //     console.error("Error in Facebook OAuth callback:", error)
+  //     res.redirect(
+  //       `${process.env.FRONTEND_URL}/auth/facebook/callback?error=${encodeURIComponent(error.message || "Failed to authenticate with Facebook")}`,
+  //     )
+  //   }
+  // }
 
   // Get user profile
   async getProfile(req, res) {

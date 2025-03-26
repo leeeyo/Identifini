@@ -1,3 +1,4 @@
+// index.js
 const express = require("express")
 const mongoose = require("mongoose")
 const cors = require("cors")
@@ -5,17 +6,8 @@ require("dotenv").config()
 
 const app = express()
 
-// Improved CORS configuration
-app.use(
-  cors({
-    origin: "*", // Allow all origins for testing
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-)
-
-// Other middleware
+// Middleware
+app.use(cors())
 app.use(express.json())
 
 // Add a test route at the root level
@@ -40,32 +32,15 @@ app.get("/test", (req, res) => {
   })
 })
 
-// Add a test route specifically for cards
-app.get("/api/cards-test", (req, res) => {
-  console.log("GET /api/cards-test route hit")
-  res.json({
-    message: "Cards test route is working",
-    cards: [
-      {
-        _id: "test-id-1",
-        card_username: "test-user",
-        display_name: "Test User",
-        bio: "This is a test card",
-        created_at: new Date().toISOString(),
-      },
-    ],
-  })
-})
-
 // Import routes
 const cardRoutes = require("./routes/cardRoutes")
 const authRoutes = require("./routes/authRoutes")
-const publicRoutes = require("./routes/publicRoutes")
+const subUserRoutes = require("./routes/subUserRoutes")
 
-// Register routes
+// Register routes - IMPORTANT: Make sure these are router objects, not controller objects
 app.use("/api/cards", cardRoutes)
 app.use("/api/auth", authRoutes)
-app.use("/api", publicRoutes) // Register public routes
+app.use("/api/sub-users", subUserRoutes)  // This should be the router, not the controller
 
 const PORT = process.env.PORT || 8080
 const server = app.listen(PORT, () => {
@@ -80,4 +55,3 @@ mongoose
   .connect(process.env.MONGODB_URI, {})
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Could not connect:", err))
-

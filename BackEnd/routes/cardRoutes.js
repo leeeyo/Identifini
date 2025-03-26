@@ -4,6 +4,7 @@ const cardController = require("../controllers/cardController")
 const leadController = require("../controllers/leadController")
 const { protect } = require("../middleware/authMiddleware")
 const vCardController = require("../controllers/vCardController")
+const menuRoutes = require("./menuRoutes")
 
 // Log available controller methods for debugging
 console.log("Available controller methods:", Object.keys(cardController))
@@ -15,6 +16,12 @@ router.use(protect)
 router.get("/", (req, res) => {
   console.log("GET /api/cards route hit with query:", req.query)
   return cardController.fetchAllCards(req, res)
+})
+
+// GET /api/cards/all - Get all cards for the user and their sub-users
+router.get("/all", (req, res) => {
+  console.log("GET /api/cards/all route hit with query:", req.query)
+  return cardController.fetchAllCardsForUserAndSubUsers(req, res)
 })
 
 // GET /api/cards/test - Test route
@@ -59,6 +66,12 @@ router.post("/:id/duplicate", (req, res) => {
   return cardController.duplicateCard(req, res)
 })
 
+// POST /api/cards/:id/transfer - Transfer a card to another user
+router.post("/:id/transfer", (req, res) => {
+  console.log("POST /api/cards/:id/transfer route hit", req.params.id)
+  return cardController.transferCard(req, res)
+})
+
 // GET /api/cards/username/:username/vcard - Get a vCard for a card
 router.get("/username/:username/vcard", (req, res) => {
   console.log("GET /api/cards/username/:username/vcard route hit", req.params.username)
@@ -83,6 +96,9 @@ router.delete("/username/:username/leads/:leadId", (req, res) => {
   console.log("DELETE /api/cards/username/:username/leads/:leadId route hit", req.params)
   return leadController.deleteLead(req, res)
 })
+
+// Nested routes for menus
+router.use("/:cardId/menus", menuRoutes)
 
 module.exports = router
 

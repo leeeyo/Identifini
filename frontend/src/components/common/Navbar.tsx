@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
-  const [userKey, setUserKey] = useState(0)
+  const [userKey, setUserKey] = useState(Date.now())
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -36,20 +36,24 @@ const Navbar: React.FC = () => {
   // Force re-render when user changes (including profile picture updates)
   useEffect(() => {
     if (user) {
-      setUserKey((prev) => prev + 1)
+      setUserKey(Date.now())
     }
   }, [user])
 
-  // Add a storage event listener to update the navbar when the user data changes
+  // Add a custom event listener to update the navbar when the user data changes
   useEffect(() => {
     const handleStorageChange = () => {
       // Force re-render when user data changes
-      setUserKey((prev) => prev + 1)
+      setUserKey(Date.now())
     }
 
+    // Listen for both storage events and custom events
     window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("user-updated", handleStorageChange)
+
     return () => {
       window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("user-updated", handleStorageChange)
     }
   }, [])
 
@@ -103,6 +107,14 @@ const Navbar: React.FC = () => {
         e.currentTarget.appendChild(initialSpan)
       }
     }
+  }
+
+  // Get profile picture URL with timestamp to prevent caching
+  const getProfilePictureUrl = () => {
+    if (!user?.profilePicture) return null
+
+    // Add timestamp to prevent caching
+    return `${user.profilePicture}?t=${userKey}`
   }
 
   return (
@@ -204,7 +216,7 @@ const Navbar: React.FC = () => {
                     {user?.profilePicture ? (
                       <div
                         className="w-9 h-9 rounded-full bg-cover bg-center flex items-center justify-center"
-                        style={{ backgroundImage: `url(${user.profilePicture}?v=${userKey})` }}
+                        style={{ backgroundImage: `url(${getProfilePictureUrl()})` }}
                         aria-label={`${user?.name || user?.username}'s profile picture`}
                         onError={handleProfilePictureError}
                       >

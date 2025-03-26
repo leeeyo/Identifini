@@ -6,7 +6,6 @@ import { useParams, useNavigate } from "react-router-dom"
 import CardPreview from "./CardPreview"
 import CardService from "../services/CardService"
 import ImageCropper from "./ImageCropper"
-import "./CardCreator.css"
 
 // Define tab names for the re-imagined UI
 enum Tab {

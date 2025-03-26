@@ -36,6 +36,11 @@ class CardRepository {
   async getByOwnerId(ownerId) {
     return await Card.find({ ownerId }).populate("user")
   }
+
+  // Add this method to your existing cardRepository.js file
+  async getByIdAndUserId(cardId, userId) {
+    return await Card.findOne({ _id: cardId, user: userId })
+  }
 }
 
 module.exports = new CardRepository()

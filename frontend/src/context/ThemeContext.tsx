@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { createContext, useState, useEffect, useContext } from "react"
-import { useAuth } from "./AuthContext"
 
 type Theme = "light" | "dark"
 
@@ -14,23 +13,9 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, updateThemePreference, isAuthenticated } = useAuth()
-
-  // Get initial theme based on user preference or system preference
+  // Get initial theme based on localStorage or system preference
   const getInitialTheme = (): Theme => {
-    // If user is authenticated and has a theme preference
-    if (isAuthenticated && user?.themePreference) {
-      if (user.themePreference === "light" || user.themePreference === "dark") {
-        return user.themePreference
-      }
-
-      // If preference is 'system', check system preference
-      if (user.themePreference === "system") {
-        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-      }
-    }
-
-    // Check localStorage as fallback
+    // Check localStorage first
     const savedTheme = localStorage.getItem("theme") as Theme
     if (savedTheme && ["light", "dark"].includes(savedTheme)) {
       return savedTheme
@@ -56,31 +41,24 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem("theme", theme)
   }, [theme])
 
-  // Update theme when user preference changes
+  // Listen for system preference changes
   useEffect(() => {
-    if (isAuthenticated && user?.themePreference) {
-      if (user.themePreference === "light" || user.themePreference === "dark") {
-        setTheme(user.themePreference)
-      } else if (user.themePreference === "system") {
-        const systemTheme =
-          window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-        setTheme(systemTheme)
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    const handleChange = () => {
+      // Only update if there's no user preference in localStorage
+      if (!localStorage.getItem("theme")) {
+        setTheme(mediaQuery.matches ? "dark" : "light")
       }
     }
-  }, [user, isAuthenticated])
 
-  const toggleTheme = async () => {
+    mediaQuery.addEventListener("change", handleChange)
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [])
+
+  const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light"
     setTheme(newTheme)
-
-    // If user is authenticated, update theme preference in backend
-    if (isAuthenticated) {
-      try {
-        await updateThemePreference(newTheme)
-      } catch (error) {
-        console.error("Failed to update theme preference:", error)
-      }
-    }
+    localStorage.setItem("theme", newTheme)
   }
 
   return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>
