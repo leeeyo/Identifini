@@ -11,7 +11,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
       <div className="overflow-hidden rounded-xl shadow-lg dark:shadow-md">
         {/* Card Header */}
         <div
-          className="p-6 text-center"
+          className="p-8 text-center" // Increased padding for taller header
           style={{
             backgroundColor: card.theme_color_1 || "#4a90e2",
             color: "#ffffff",
@@ -21,34 +21,38 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
             <img
               src={card.card_pic || "/placeholder.svg"}
               alt={card.display_name}
-              className="w-24 h-24 rounded-full object-cover border-2 border-white mx-auto mb-4"
+              className="w-28 h-28 rounded-full object-cover border-2 border-white mx-auto mb-5" // Larger image and margin
             />
           ) : (
-            <div className="w-24 h-24 rounded-full bg-white/30 flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4">
+            <div className="w-28 h-28 rounded-full bg-white/30 flex items-center justify-center text-white text-4xl font-bold mx-auto mb-5">
+              {" "}
+              {/* Larger avatar */}
               {card.display_name ? card.display_name.charAt(0).toUpperCase() : "?"}
             </div>
           )}
-          <h2 className="text-xl font-bold">{card.display_name || "Display Name"}</h2>
+          <h2 className="text-2xl font-bold">{card.display_name || "Display Name"}</h2>
         </div>
 
         {/* Card Content */}
         <div
-          className="p-5"
+          className="p-6" // Increased padding
           style={{
             backgroundColor: card.theme_color_2 || "#ffffff",
             color: card.theme_color_3 || "#333333",
           }}
         >
-          {card.bio && <p className="text-sm italic mb-4">{card.bio}</p>}
-
+          {card.bio && <p className="text-sm italic mb-5">{card.bio}</p>} {/* Increased margin */}
           {card.card_email && (
-            <div className="mb-2">
+            <div className="mb-3">
+              {" "}
+              {/* Increased margin */}
               <strong>Email:</strong> {card.card_email}
             </div>
           )}
-
           {card.display_address && (
-            <div className="mb-2">
+            <div className="mb-3">
+              {" "}
+              {/* Increased margin */}
               <strong>Address:</strong> {card.display_address}
             </div>
           )}
@@ -56,7 +60,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ card }) => {
 
         {/* Card Footer */}
         <div
-          className="p-3 text-center text-sm border-t"
+          className="p-4 text-center text-sm border-t" // Increased padding
           style={{
             backgroundColor: card.theme_color_2 || "#ffffff",
             color: card.theme_color_3 || "#333333",

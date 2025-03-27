@@ -18,6 +18,33 @@ interface Lead {
   createdAt: string
 }
 
+interface MenuItem {
+  _id: string
+  name: string
+  description: string
+  price: number
+  image: string
+  category: string
+  isAvailable: boolean
+}
+
+interface Menu {
+  _id: string
+  card: string
+  title: string
+  description: string
+  items: MenuItem[]
+  isActive: boolean
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+interface MenuListResponse {
+  menus: Menu[]
+  total?: number
+}
+
 // Define the CardService object with all methods
 const CardService = {
   // Get all cards with pagination
@@ -41,6 +68,17 @@ const CardService = {
         console.error("Both endpoints failed")
         throw error // Throw the original error
       }
+    }
+  },
+  // Add this new method to the CardService object
+  checkUsernameAvailability: async (username: string): Promise<{ exists: boolean }> => {
+    try {
+      return await API.get<{ exists: boolean }>(`/api/cards/check-username/${username}`)
+    } catch (err) {
+      console.error("Error checking username availability:", err)
+      // If the API endpoint doesn't exist yet, simulate a response
+      // This allows the frontend to work even if the backend isn't updated yet
+      return { exists: false }
     }
   },
 
@@ -89,12 +127,150 @@ const CardService = {
     return API.delete<void>(`/api/cards/username/${cardUsername}/leads/${leadId}`)
   },
 
-  // Download vCard for a card
-  downloadVCard: async (username: string): Promise<void> => {
-    // This will trigger a direct download through the browser
-    window.location.href = `/api/cards/username/${username}/vcard`
+  
+    // Download vCard for a card
+    downloadVCard: async (username: string): Promise<void> => {
+      // This will trigger a direct download through the browser
+      window.location.href = `/api/cards/username/${username}/vcard`
+    },
+
+
+ // Menu Methods
+  // Get all menus for a card
+  getCardMenus: async (cardId: string): Promise<MenuListResponse> => {
+    console.log(`Fetching menus for card ID: ${cardId}`)
+    try {
+      const response = await API.get<any>(`/api/cards/${cardId}/menus`)
+      console.log("Menus response:", response)
+
+      // Handle the actual API response format which has menus in the 'data' property
+      if (response && response.data && Array.isArray(response.data)) {
+        return {
+          menus: response.data,
+          total: response.count || response.data.length,
+        }
+      }
+
+      // Fallback for unexpected response format
+      console.warn("Unexpected response format:", response)
+      return { menus: [], total: 0 }
+    } catch (error) {
+      console.error("Error fetching menus:", error)
+      // Return empty menus array on error
+      return { menus: [], total: 0 }
+    }
+  },
+
+  // Get a menu by ID
+  getMenuById: async (cardId: string, menuId: string): Promise<Menu> => {
+    try {
+      const response = await API.get<any>(`/api/cards/${cardId}/menus/${menuId}`)
+      // Handle the actual API response format which has the menu in the 'data' property
+      if (response && response.data) {
+        return response.data
+      }
+      return response
+    } catch (error) {
+      console.error("Error fetching menu:", error)
+      throw error
+    }
+  },
+
+  // Create a new menu
+  createMenu: async (cardId: string, menuData: Partial<Menu>): Promise<Menu> => {
+    console.log(`Creating menu for card ID: ${cardId}`, menuData)
+    try {
+      const response = await API.post<any>(`/api/cards/${cardId}/menus`, menuData)
+      console.log("Create menu response:", response)
+
+      // Handle the actual API response format which has the menu in the 'data' property
+      if (response && response.data) {
+        return response.data
+      }
+
+      return response
+    } catch (error) {
+      console.error("Error creating menu:", error)
+      throw error
+    }
+  },
+
+  // Update a menu
+  updateMenu: async (cardId: string, menuId: string, menuData: Partial<Menu>): Promise<Menu> => {
+    try {
+      const response = await API.put<any>(`/api/cards/${cardId}/menus/${menuId}`, menuData)
+      // Handle the actual API response format which has the menu in the 'data' property
+      if (response && response.data) {
+        return response.data
+      }
+      return response
+    } catch (error) {
+      console.error("Error updating menu:", error)
+      throw error
+    }
+  },
+
+  // Delete a menu
+  deleteMenu: async (cardId: string, menuId: string): Promise<void> => {
+    return API.delete<void>(`/api/cards/${cardId}/menus/${menuId}`)
+  },
+
+  // Menu Item Methods
+  // Get all menu items
+  getMenuItems: async (cardId: string, menuId: string): Promise<MenuItem[]> => {
+    return API.get<MenuItem[]>(`/api/cards/${cardId}/menus/${menuId}/items`)
+  },
+
+  // Get a menu item by ID
+  getMenuItemById: async (cardId: string, menuId: string, itemId: string): Promise<MenuItem> => {
+    return API.get<MenuItem>(`/api/cards/${cardId}/menus/${menuId}/items/${itemId}`)
+  },
+
+  // Create a new menu item
+  createMenuItem: async (cardId: string, menuId: string, itemData: Partial<MenuItem>): Promise<MenuItem> => {
+    try {
+      const response = await API.post<any>(`/api/cards/${cardId}/menus/${menuId}/items`, itemData)
+      console.log("Create menu item response:", response)
+
+      // Handle the actual API response format which might have the item in the 'data' property
+      if (response && response.data) {
+        return response.data
+      }
+
+      return response
+    } catch (error) {
+      console.error("Error creating menu item:", error)
+      throw error
+    }
+  },
+
+  // Update a menu item
+  updateMenuItem: async (
+    cardId: string,
+    menuId: string,
+    itemId: string,
+    itemData: Partial<MenuItem>,
+  ): Promise<MenuItem> => {
+    try {
+      const response = await API.put<any>(`/api/cards/${cardId}/menus/${menuId}/items/${itemId}`, itemData)
+      console.log("Update menu item response:", response)
+
+      // Handle the actual API response format which might have the item in the 'data' property
+      if (response && response.data) {
+        return response.data
+      }
+
+      return response
+    } catch (error) {
+      console.error("Error updating menu item:", error)
+      throw error
+    }
+  },
+
+  // Delete a menu item
+  deleteMenuItem: async (cardId: string, menuId: string, itemId: string): Promise<void> => {
+    return API.delete<void>(`/api/cards/${cardId}/menus/${menuId}/items/${itemId}`)
   },
 }
 
 export default CardService
-

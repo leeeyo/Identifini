@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import CardService from "../services/CardService"
 import type { Card } from "../types/card"
 import { useAuth } from "../context/AuthContext"
@@ -15,6 +15,7 @@ const Dashboard: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1)
   const cardsPerPage = 6
   const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
 
   // Stats
   const [stats, setStats] = useState({
@@ -110,6 +111,10 @@ const Dashboard: React.FC = () => {
     setCurrentPage(page)
   }
 
+  const handleManageMenus = (username: string) => {
+    navigate(`/cards/${username}/menus`)
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] p-6 text-center">
@@ -140,7 +145,7 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
 
-          <div>
+          <div className="flex flex-col sm:flex-row gap-2">
             {stats.cardCount < stats.maxCards && (
               <Link
                 to="/create-card"
@@ -159,6 +164,26 @@ const Dashboard: React.FC = () => {
                   />
                 </svg>
                 Create New Card
+              </Link>
+            )}
+            {cards.length > 0 && (
+              <Link
+                to={`/cards/${cards[0].card_username}/menus/create`}
+                className="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md w-full md:w-auto justify-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Create New Menu
               </Link>
             )}
           </div>
@@ -354,6 +379,14 @@ const Dashboard: React.FC = () => {
                               className="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
                             >
                               Leads
+                            </Link>
+
+                            {/* Menu Management Button */}
+                            <Link
+                              to={`/cards/${card.card_username}/menus`}
+                              className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                            >
+                              Menus
                             </Link>
                           </div>
                         </div>
