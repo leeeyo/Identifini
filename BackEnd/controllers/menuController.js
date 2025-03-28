@@ -212,3 +212,43 @@ exports.deleteMenuItem = async (req, res) => {
   }
 }
 
+// Get a menu by ID (without card context)
+exports.getMenuById = async (req, res) => {
+  try {
+    const { menuId } = req.params
+    const menu = await menuService.getMenuById(req.user._id, menuId)
+
+    res.status(200).json({
+      success: true,
+      data: menu,
+    })
+  } catch (error) {
+    console.error("Error fetching menu:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch menu",
+      error: error.message,
+    })
+  }
+}
+
+// Get all menus for the current user (across all cards)
+exports.getAllMenusForUser = async (req, res) => {
+  try {
+    const menus = await menuService.getAllMenusForUser(req.user._id)
+
+    res.status(200).json({
+      success: true,
+      count: menus.length,
+      data: menus,
+    })
+  } catch (error) {
+    console.error("Error fetching menus:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch menus",
+      error: error.message,
+    })
+  }
+}
+

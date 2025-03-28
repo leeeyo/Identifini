@@ -60,8 +60,6 @@ router.get("/profile", protect, authController.getProfile)
 // PUT /api/auth/profile - Update user profile (protected route)
 router.put("/profile", protect, authController.updateProfile)
 
-// PUT /api/auth/theme - Update user theme preference (protected route)
-router.put("/theme", protect, authController.updateThemePreference)
 
 module.exports = router
 

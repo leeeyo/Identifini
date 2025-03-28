@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const cardSchema = new mongoose.Schema({
   card_username: {
@@ -9,6 +9,10 @@ const cardSchema = new mongoose.Schema({
   display_name: {
     type: String,
     required: true,
+  },
+  tagline: {
+    type: String,
+    default: "",
   },
   bio: String,
   card_pic: String,
@@ -39,16 +43,86 @@ const cardSchema = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  // New fields for subscription package support:
+  package_type: {
+    type: String,
+    enum: ["individual", "restaurant", "enterprise"],
+    required: true,
+    default: "individual",
+  },
+  cover_picture: {
+    type: String,
+    default: "",
+  },
+  business_hours: {
+    type: String,
+    default: "",
+  },
+  // Sub-models
+  individual_details: {
+    birthday: String,
+    hometown: String,
+    current_city: String,
+    relationship_status: String,
+    job_title: String,
+    interests: {
+      type: [String],
+      default: [],
+    },
+    resume: {
+      education: String,
+      experience: String,
+      skills: [String],
+      certifications: [String],
+    },
+  },
+  restaurant_details: {
+    speciality: String,
+    amenities: {
+      type: [String],
+      default: [],
+    },
+    events: {
+      type: [String],
+      default: [],
+    },
+    menu: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Menu",
+    },
+  },
+  enterprise_details: {
+    company_details: {
+      founded_time: String,
+      headquarters: String,
+      employees_number: Number,
+    },
+    industries_served: {
+      type: [String],
+      default: [],
+    },
+    services: {
+      type: [String],
+      default: [],
+    },
+    certifications: {
+      type: [String],
+      default: [],
+    },
+    clients: {
+      type: [String],
+      default: [],
+    },
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true, // Now required
+    required: true,
   },
   created_at: {
     type: Date,
     default: Date.now,
   },
-})
+});
 
-module.exports = mongoose.model("Card", cardSchema)
-
+module.exports = mongoose.model("Card", cardSchema);

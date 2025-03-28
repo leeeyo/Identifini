@@ -186,6 +186,37 @@ async getMenuItem(userId, cardId, menuId, itemId) {
   return item
 }
 
+async getMenuById(userId, menuId) {
+  // Find the menu
+  const menu = await menuRepository.findById(menuId);
+  if (!menu) {
+    throw new Error("Menu not found");
+  }
+  
+  // Verify the menu belongs to a card owned by the user
+  const card = await cardRepository.getByIdAndUserId(menu.card, userId);
+  if (!card) {
+    throw new Error("Not authorized to access this menu");
+  }
+  
+  return menu;
+}
+
+// Get all menus for the current user (across all cards)
+async getAllMenusForUser(userId) {
+  // Get all cards owned by the user
+  const cards = await cardRepository.getByOwnerId(userId);
+  const cardIds = cards.map(card => card._id);
+  
+  // Get all menus for these cards
+  const menus = await Promise.all(
+    cardIds.map(cardId => menuRepository.findByCardId(cardId))
+  );
+  
+  // Flatten the array of menus
+  return menus.flat();
+}
+
 }
 
 
