@@ -53,8 +53,8 @@ const MenuForm: React.FC = () => {
             setFormData({
               title: menu.title,
               description: menu.description || "",
-              isActive: menu.isActive,
-              displayOrder: menu.displayOrder,
+              isActive: menu.isActive ?? true,
+              displayOrder: menu.displayOrder ?? 0,
             })
           } catch (err) {
             console.error("Error fetching menu:", err)

@@ -82,6 +82,8 @@ const CardCreator: React.FC = () => {
       return
     }
 
+    // TODO: Implement username availability checking when the endpoint is ready
+    /*
     try {
       setIsCheckingUsername(true)
       // Check if username already exists
@@ -98,6 +100,10 @@ const CardCreator: React.FC = () => {
     } finally {
       setIsCheckingUsername(false)
     }
+    */
+
+    // Temporary implementation until the endpoint is ready
+    setUsernameError(null)
   }, [])
 
   // Email validation
@@ -182,7 +188,7 @@ const CardCreator: React.FC = () => {
   }, [formData.display_name])
 
   // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData({
       ...formData,
@@ -243,10 +249,13 @@ const CardCreator: React.FC = () => {
         return
       }
 
+      // TODO: Uncomment when username availability checking is implemented
+      /*
       if (isCheckingUsername) {
         setMessage({ type: "error", text: "Please wait while we check username availability." })
         return
       }
+      */
     }
 
     if (currentStep === Step.Email) {
@@ -692,6 +701,26 @@ const CardCreator: React.FC = () => {
                           </div>
                         </div>
                       </div>
+
+                      <div>
+                        <label htmlFor="package_type" className="block text-sm font-medium text-card-foreground mb-1">
+                          Card Type
+                        </label>
+                        <select
+                          id="package_type"
+                          name="package_type"
+                          value={formData.package_type || "individual"}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 rounded-lg border border-border bg-background text-card-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        >
+                          <option value="individual">Individual</option>
+                          <option value="restaurant">Restaurant</option>
+                          <option value="enterprise">Enterprise</option>
+                        </select>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Select the type of card that best fits your needs.
+                        </p>
+                      </div>
                     </div>
                   )}
 
@@ -782,6 +811,9 @@ const CardCreator: React.FC = () => {
                             </p>
                             <p className="text-card-foreground">
                               <strong>Display Name:</strong> {formData.display_name}
+                            </p>
+                            <p className="text-card-foreground">
+                              <strong>Card Type:</strong> {formData.package_type || "Individual"}
                             </p>
                           </div>
 

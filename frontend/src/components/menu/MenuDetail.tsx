@@ -5,6 +5,17 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useMenu } from "../../context/MenuContext"
 import CardService from "../../services/CardService"
 
+// Add this helper function at the top of your file
+const formatDate = (dateString?: string): string => {
+  if (!dateString) return "N/A"
+  try {
+    return new Date(dateString).toLocaleDateString()
+  } catch (error) {
+    console.error("Error formatting date:", error)
+    return "Invalid date"
+  }
+}
+
 const MenuDetail: React.FC = () => {
   const { username, menuId } = useParams<{ username: string; menuId: string }>()
   const { currentMenu, loading, error, fetchMenu } = useMenu()
@@ -165,15 +176,11 @@ const MenuDetail: React.FC = () => {
           </div>
           <div className="text-center">
             <p className="text-muted-foreground text-sm mb-1">Created</p>
-            <p className="text-card-foreground font-medium text-lg">
-              {new Date(currentMenu.createdAt).toLocaleDateString()}
-            </p>
+            <p className="text-card-foreground font-medium text-lg">{formatDate(currentMenu.createdAt)}</p>
           </div>
           <div className="text-center">
             <p className="text-muted-foreground text-sm mb-1">Last Updated</p>
-            <p className="text-card-foreground font-medium text-lg">
-              {new Date(currentMenu.updatedAt).toLocaleDateString()}
-            </p>
+            <p className="text-card-foreground font-medium text-lg">{formatDate(currentMenu.updatedAt)}</p>
           </div>
         </div>
       </div>
@@ -329,10 +336,14 @@ const MenuDetail: React.FC = () => {
                           onClick={() => {
                             if (window.confirm("Are you sure you want to delete this item?")) {
                               if (cardId && menuId) {
-                                CardService.deleteMenuItem(cardId, menuId, item._id).then(() => {
-                                  // Refresh the menu
-                                  fetchMenu(cardId, menuId)
-                                })
+                                if (item._id) {
+                                  CardService.deleteMenuItem(cardId, menuId, item._id).then(() => {
+                                    // Refresh the menu
+                                    fetchMenu(cardId, menuId)
+                                  })
+                                } else {
+                                  console.error("Cannot delete item: missing item ID")
+                                }
                               }
                             }
                           }}

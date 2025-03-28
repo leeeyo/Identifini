@@ -216,9 +216,72 @@ async getAllMenusForUser(userId) {
   // Flatten the array of menus
   return menus.flat();
 }
+// Update the deleteMenu method in menuService.js\
+async deleteMenu(userId, cardId, menuId)
+{
+  // Verify card exists and belongs to the user
+  const card = await cardRepository.getByIdAndUserId(cardId, userId)
+  if (!card) {
+    throw new Error("Card not found or you do not have permission to modify it")
+  }
 
+  // Find the menu
+  const menu = await menuRepository.findByIdAndCardId(menuId, cardId)
+  if (!menu) {
+    throw new Error("Menu not found")
+  }
+
+  // Use soft delete instead of permanent delete
+  return await menuRepository.softDelete(menuId);
 }
 
+// Restore a soft deleted menu
+
+async restoreMenu(userId, cardId, menuId) {
+  // Verify card exists and belongs to the user
+  const card = await cardRepository.getByIdAndUserId(cardId, userId);
+  if (!card) {
+    throw new Error("Card not found or you do not have permission to modify it");
+  }
+
+  // Find the deleted menu using the repository
+  const menu = await menuRepository.findDeletedByIdAndCardId(menuId, cardId);
+  if (!menu) {
+    throw new Error("Menu not found or not deleted");
+  }
+
+  return await menuRepository.restore(menuId);
+}
+
+// Add a method to get deleted menus
+async getDeletedMenus(userId, cardId)
+{
+  // Verify card exists and belongs to the user
+  const card = await cardRepository.getByIdAndUserId(cardId, userId)
+  if (!card) {
+    throw new Error("Card not found or you do not have permission to access it")
+  }
+
+  return await Menu.findDeleted({ card: cardId });
+}
+
+// Add a method to permanently delete a menu
+async permanentlyDeleteMenu(userId, cardId, menuId)
+{
+  // Verify card exists and belongs to the user
+  const card = await cardRepository.getByIdAndUserId(cardId, userId)
+  if (!card) {
+    throw new Error("Card not found or you do not have permission to modify it")
+  }
+
+  const result = await menuRepository.permanentlyDelete(menuId, cardId)
+  if (!result) {
+    throw new Error("Menu not found")
+  }
+
+  return result;
+}
+}
 
 module.exports = new MenuService()
 

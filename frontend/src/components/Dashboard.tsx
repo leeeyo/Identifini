@@ -7,6 +7,17 @@ import CardService from "../services/CardService"
 import type { Card } from "../types/card"
 import { useAuth } from "../context/AuthContext"
 
+// Helper function for safe date formatting
+const formatDate = (dateString?: string): string => {
+  if (!dateString) return "N/A"
+  try {
+    return new Date(dateString).toLocaleDateString()
+  } catch (error) {
+    console.error("Error formatting date:", error)
+    return "Invalid date"
+  }
+}
+
 const Dashboard: React.FC = () => {
   const [cards, setCards] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
@@ -327,6 +338,9 @@ const Dashboard: React.FC = () => {
                                 src={card.card_pic || "/placeholder.svg"}
                                 alt={card.display_name}
                                 className="w-12 h-12 rounded-full object-cover border-2 border-card shadow-sm"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/placeholder.svg?height=48&width=48"
+                                }}
                               />
                             ) : (
                               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-lg shadow-sm">
@@ -335,9 +349,7 @@ const Dashboard: React.FC = () => {
                             )}
                             <div className="ml-3">
                               <h4 className="font-semibold text-card-foreground">{card.display_name}</h4>
-                              <p className="text-xs text-muted-foreground">
-                                Created {new Date(card.created_at).toLocaleDateString()}
-                              </p>
+                              <p className="text-xs text-muted-foreground">Created {formatDate(card.created_at)}</p>
                             </div>
                           </div>
 
@@ -407,7 +419,7 @@ const Dashboard: React.FC = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                         />
                       </svg>
                     </div>

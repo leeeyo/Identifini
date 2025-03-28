@@ -17,9 +17,7 @@ import {
   Twitter,
   Linkedin,
   Instagram,
-  ShoppingCart,
   CalendarIcon,
-  Coffee,
   Camera,
   Plane,
   Utensils,
@@ -121,7 +119,7 @@ const CardView: React.FC = () => {
   // Check if current user is the owner of the card
   const isOwner = () => {
     if (!user || !card) return false
-    return user._id === card.created_by || user._id === card.user
+    return user._id === card.user
   }
 
   // Handle share button click
@@ -437,6 +435,14 @@ const CardView: React.FC = () => {
     )
   }
 
+  // Get job title from individual details if available
+  const getJobTitle = () => {
+    if (card?.individual_details?.job_title) {
+      return card.individual_details.job_title
+    }
+    return ""
+  }
+
   // Render desktop view
   if (isDesktop) {
     return (
@@ -491,53 +497,58 @@ const CardView: React.FC = () => {
 
             {/* Profile Info */}
             <div className="pt-20 px-4 flex-1 flex flex-col overflow-hidden">
-              <h1 className="text-2xl font-bold text-center">{card?.display_name || "John Smith"}</h1>
-              <p className="text-gray-600 text-sm text-center mt-1">Senior Product Designer</p>
+              <h1 className="text-2xl font-bold text-center">{card?.display_name || ""}</h1>
+              <p className="text-gray-600 text-sm text-center mt-1">{getJobTitle()}</p>
 
-              <p className="text-gray-600 text-sm text-center mt-4 mb-6">
-                {card?.bio ||
-                  "Creating digital experiences that delight users and solve real problems. Passionate about UI/UX and design systems."}
-              </p>
+              <p className="text-gray-600 text-sm text-center mt-4 mb-6">{card?.bio || ""}</p>
 
               {/* Social Media Icons */}
-              <div className="flex justify-center gap-4 mb-6">
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                >
-                  <Globe size={18} />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                >
-                  <Twitter size={18} />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                >
-                  <Linkedin size={18} />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                >
-                  <Instagram size={18} />
-                </a>
-              </div>
+              {renderSocialIcons() || (
+                <div className="flex justify-center gap-4 mb-6">
+                  {card?.social_medias && card.social_medias.length > 0 ? (
+                    renderSocialIcons()
+                  ) : (
+                    <>
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      >
+                        <Globe size={18} />
+                      </a>
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      >
+                        <Twitter size={18} />
+                      </a>
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      >
+                        <Linkedin size={18} />
+                      </a>
+                      <a
+                        href="#"
+                        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      >
+                        <Instagram size={18} />
+                      </a>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Call and Email Buttons */}
               <div className="flex gap-2 mb-6">
                 <a
-                  href={`tel:${"+15551234567"}`}
+                  href={`tel:${card?.phone || ""}`}
                   className="flex-1 bg-blue-500 text-white py-3 rounded-md flex items-center justify-center font-medium hover:bg-blue-600 transition-colors"
                 >
                   <Phone size={18} className="mr-2" />
                   Call
                 </a>
                 <a
-                  href={`mailto:${card?.card_email || "john@example.com"}`}
+                  href={`mailto:${card?.card_email || ""}`}
                   className="flex-1 bg-blue-500 text-white py-3 rounded-md flex items-center justify-center font-medium hover:bg-blue-600 transition-colors"
                 >
                   <Mail size={18} className="mr-2" />
@@ -546,43 +557,30 @@ const CardView: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2 mb-4">
-                <a
-                  href="#"
-                  className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                >
-                  <Globe size={18} />
-                  <span>My Website</span>
-                </a>
-                <a
-                  href="#"
-                  className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                >
-                  <ShoppingCart size={18} />
-                  <span>My Store</span>
-                </a>
-                <a
-                  href="#"
-                  className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                >
-                  <ShoppingCart size={18} />
-                  <span>My Store</span>
-                </a>
-                <a
-                  href="#"
-                  className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                >
-                  <CalendarIcon size={18} />
-                  <span>Book a Meeting</span>
-                </a>
-                <a
-                  href="#"
-                  className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                >
-                  <Coffee size={18} />
-                  <span>Buy Me a Coffee</span>
-                </a>
-              </div>
+              {renderActionButtons() || (
+                <div className="space-y-2 mb-4">
+                  {card?.action_buttons && card.action_buttons.length > 0 ? (
+                    renderActionButtons()
+                  ) : (
+                    <>
+                      <a
+                        href="#"
+                        className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                      >
+                        <Globe size={18} />
+                        <span>My Website</span>
+                      </a>
+                      <a
+                        href="#"
+                        className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                      >
+                        <CalendarIcon size={18} />
+                        <span>Book a Meeting</span>
+                      </a>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Save Contact Button */}
               <button
@@ -633,25 +631,26 @@ const CardView: React.FC = () => {
                   <div>
                     <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                     <div className="space-y-4">
-                      <div className="flex items-center">
-                        <Mail className="text-blue-500 mr-3" size={20} />
-                        <a
-                          href={`mailto:${card?.card_email || "john@example.com"}`}
-                          className="text-gray-700 hover:text-blue-500"
-                        >
-                          {card?.card_email || "john@example.com"}
-                        </a>
-                      </div>
-                      <div className="flex items-center">
-                        <Phone className="text-blue-500 mr-3" size={20} />
-                        <a href="tel:+15551234567" className="text-gray-700 hover:text-blue-500">
-                          +1 (555) 123-4567
-                        </a>
-                      </div>
+                      {card?.card_email && (
+                        <div className="flex items-center">
+                          <Mail className="text-blue-500 mr-3" size={20} />
+                          <a href={`mailto:${card.card_email}`} className="text-gray-700 hover:text-blue-500">
+                            {card.card_email}
+                          </a>
+                        </div>
+                      )}
+                      {card?.phone && (
+                        <div className="flex items-center">
+                          <Phone className="text-blue-500 mr-3" size={20} />
+                          <a href={`tel:${card.phone}`} className="text-gray-700 hover:text-blue-500">
+                            {card.phone}
+                          </a>
+                        </div>
+                      )}
                       {card?.display_address && (
                         <div className="flex items-center">
                           <MapPin className="text-blue-500 mr-3" size={20} />
-                          <span className="text-gray-700">{card.display_address || "Mahdia, Tunisia"}</span>
+                          <span className="text-gray-700">{card.display_address}</span>
                         </div>
                       )}
                     </div>
@@ -662,99 +661,145 @@ const CardView: React.FC = () => {
                   {/* About */}
                   <div>
                     <h2 className="text-xl font-semibold mb-4">About</h2>
-                    <p className="text-gray-700">
-                      {card?.bio ||
-                        "Creating digital experiences that delight users and solve real problems. Passionate about UI/UX and design systems. I'm passionate about creating meaningful connections through design and technology. When I'm not designing, you'll find me exploring new places, experimenting with photography, or trying out new recipes in the kitchen."}
-                    </p>
+                    <p className="text-gray-700">{card?.bio || ""}</p>
                   </div>
 
-                  <hr className="border-gray-200" />
+                  {card?.individual_details && (
+                    <>
+                      <hr className="border-gray-200" />
 
-                  {/* Personal Details */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Personal Details */}
                       <div>
-                        <h3 className="text-gray-500 mb-2">Birthday</h3>
-                        <div className="flex items-center">
-                          <CalendarIcon className="text-blue-500 mr-2" size={18} />
-                          <span className="text-gray-700">April 15, 1988</span>
+                        <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {card.individual_details.birthday && (
+                            <div>
+                              <h3 className="text-gray-500 mb-2">Birthday</h3>
+                              <div className="flex items-center">
+                                <CalendarIcon className="text-blue-500 mr-2" size={18} />
+                                <span className="text-gray-700">{card.individual_details.birthday}</span>
+                              </div>
+                            </div>
+                          )}
+                          {card.individual_details.hometown && (
+                            <div>
+                              <h3 className="text-gray-500 mb-2">Hometown</h3>
+                              <div className="flex items-center">
+                                <Home className="text-blue-500 mr-2" size={18} />
+                                <span className="text-gray-700">{card.individual_details.hometown}</span>
+                              </div>
+                            </div>
+                          )}
+                          {card.individual_details.current_city && (
+                            <div>
+                              <h3 className="text-gray-500 mb-2">Current City</h3>
+                              <div className="flex items-center">
+                                <MapPin className="text-blue-500 mr-2" size={18} />
+                                <span className="text-gray-700">{card.individual_details.current_city}</span>
+                              </div>
+                            </div>
+                          )}
+                          {card.individual_details.relationship_status && (
+                            <div>
+                              <h3 className="text-gray-500 mb-2">Relationship</h3>
+                              <div className="flex items-center">
+                                <Heart className="text-blue-500 mr-2" size={18} />
+                                <span className="text-gray-700">{card.individual_details.relationship_status}</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div>
-                        <h3 className="text-gray-500 mb-2">Hometown</h3>
-                        <div className="flex items-center">
-                          <Home className="text-blue-500 mr-2" size={18} />
-                          <span className="text-gray-700">San Francisco, CA</span>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="text-gray-500 mb-2">Current City</h3>
-                        <div className="flex items-center">
-                          <MapPin className="text-blue-500 mr-2" size={18} />
-                          <span className="text-gray-700">{card?.display_address || "Mahdia, Tunisia"}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="text-gray-500 mb-2">Relationship</h3>
-                        <div className="flex items-center">
-                          <Heart className="text-blue-500 mr-2" size={18} />
-                          <span className="text-gray-700">Married</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  <hr className="border-gray-200" />
+                      {card.individual_details.interests && card.individual_details.interests.length > 0 && (
+                        <>
+                          <hr className="border-gray-200" />
 
-                  {/* Interests & Hobbies */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Interests & Hobbies</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                          <Camera className="text-blue-500" size={20} />
-                        </div>
-                        <span className="text-gray-700 font-medium text-sm">Photography</span>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                          <Plane className="text-blue-500" size={20} />
-                        </div>
-                        <span className="text-gray-700 font-medium text-sm">Travel</span>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                          <Utensils className="text-blue-500" size={20} />
-                        </div>
-                        <span className="text-gray-700 font-medium text-sm">Cooking</span>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                          <BookOpen className="text-blue-500" size={20} />
-                        </div>
-                        <span className="text-gray-700 font-medium text-sm">Reading</span>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                          <Music className="text-blue-500" size={20} />
-                        </div>
-                        <span className="text-gray-700 font-medium text-sm">Music</span>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                          <Film className="text-blue-500" size={20} />
-                        </div>
-                        <span className="text-gray-700 font-medium text-sm">Movies</span>
-                      </div>
-                    </div>
-                  </div>
+                          {/* Interests & Hobbies */}
+                          <div>
+                            <h2 className="text-xl font-semibold mb-4">Interests & Hobbies</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {card.individual_details.interests.map((interest, index) => {
+                                // Map interests to icons (simplified example)
+                                const getInterestIcon = (interest: string) => {
+                                  const interestLower = interest.toLowerCase()
+                                  if (interestLower.includes("photo")) return Camera
+                                  if (interestLower.includes("travel")) return Plane
+                                  if (interestLower.includes("cook")) return Utensils
+                                  if (interestLower.includes("read")) return BookOpen
+                                  if (interestLower.includes("music")) return Music
+                                  if (interestLower.includes("movie") || interestLower.includes("film")) return Film
+                                  return Camera // Default icon
+                                }
+
+                                const InterestIcon = getInterestIcon(interest)
+
+                                return (
+                                  <div key={index} className="bg-blue-50 p-3 rounded-lg flex flex-col items-center">
+                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
+                                      <InterestIcon className="text-blue-500" size={20} />
+                                    </div>
+                                    <span className="text-gray-700 font-medium text-sm">{interest}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
 
               {activeTab === "resume" && (
                 <div className="space-y-6">
-                  <p className="text-gray-500 text-center py-8">Resume content will be displayed here</p>
+                  {card?.individual_details?.resume ? (
+                    <div className="space-y-6">
+                      {card.individual_details.resume.education && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Education</h2>
+                          <p className="text-gray-700">{card.individual_details.resume.education}</p>
+                        </div>
+                      )}
+
+                      {card.individual_details.resume.experience && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Experience</h2>
+                          <p className="text-gray-700">{card.individual_details.resume.experience}</p>
+                        </div>
+                      )}
+
+                      {card.individual_details.resume.skills && card.individual_details.resume.skills.length > 0 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Skills</h2>
+                          <div className="flex flex-wrap gap-2">
+                            {card.individual_details.resume.skills.map((skill, index) => (
+                              <span key={index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {card.individual_details.resume.certifications &&
+                        card.individual_details.resume.certifications.length > 0 && (
+                          <div>
+                            <h2 className="text-xl font-semibold mb-4">Certifications</h2>
+                            <ul className="list-disc pl-5 space-y-2">
+                              {card.individual_details.resume.certifications.map((cert, index) => (
+                                <li key={index} className="text-gray-700">
+                                  {cert}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">Resume content will be displayed here</p>
+                  )}
                 </div>
               )}
 
@@ -837,53 +882,58 @@ const CardView: React.FC = () => {
 
         {/* Profile Info */}
         <div className="pt-20 px-6 text-center">
-          <h1 className="text-2xl font-bold">{card?.display_name || "John Smith"}</h1>
-          <p className="text-gray-600 text-sm mt-1">Senior Product Designer</p>
+          <h1 className="text-2xl font-bold">{card?.display_name || ""}</h1>
+          <p className="text-gray-600 text-sm mt-1">{getJobTitle()}</p>
 
-          <p className="text-gray-600 text-sm mt-4 mb-6">
-            {card?.bio ||
-              "Creating digital experiences that delight users and solve real problems. Passionate about UI/UX and design systems."}
-          </p>
+          <p className="text-gray-600 text-sm mt-4 mb-6">{card?.bio || ""}</p>
 
           {/* Social Media Icons */}
-          <div className="flex justify-center gap-4 mb-6">
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-            >
-              <Globe size={18} />
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-            >
-              <Twitter size={18} />
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-            >
-              <Linkedin size={18} />
-            </a>
-            <a
-              href="#"
-              className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-            >
-              <Instagram size={18} />
-            </a>
-          </div>
+          {renderSocialIcons() || (
+            <div className="flex justify-center gap-4 mb-6">
+              {card?.social_medias && card.social_medias.length > 0 ? (
+                renderSocialIcons()
+              ) : (
+                <>
+                  <a
+                    href="#"
+                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >
+                    <Globe size={18} />
+                  </a>
+                  <a
+                    href="#"
+                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >
+                    <Twitter size={18} />
+                  </a>
+                  <a
+                    href="#"
+                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >
+                    <Linkedin size={18} />
+                  </a>
+                  <a
+                    href="#"
+                    className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  >
+                    <Instagram size={18} />
+                  </a>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Call and Email Buttons */}
           <div className="flex gap-4 mb-6">
             <a
-              href={`tel:${"+15551234567"}`}
+              href={`tel:${card?.phone || ""}`}
               className="flex-1 bg-blue-500 text-white py-3 rounded-md flex items-center justify-center font-medium hover:bg-blue-600 transition-colors"
             >
               <Phone size={18} className="mr-2" />
               Call
             </a>
             <a
-              href={`mailto:${card?.card_email || "john@example.com"}`}
+              href={`mailto:${card?.card_email || ""}`}
               className="flex-1 bg-blue-500 text-white py-3 rounded-md flex items-center justify-center font-medium hover:bg-blue-600 transition-colors"
             >
               <Mail size={18} className="mr-2" />
@@ -892,43 +942,30 @@ const CardView: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-3 mb-6">
-            <a
-              href="#"
-              className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-            >
-              <Globe size={18} />
-              <span>My Website</span>
-            </a>
-            <a
-              href="#"
-              className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-            >
-              <ShoppingCart size={18} />
-              <span>My Store</span>
-            </a>
-            <a
-              href="#"
-              className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-            >
-              <ShoppingCart size={18} />
-              <span>My Store</span>
-            </a>
-            <a
-              href="#"
-              className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-            >
-              <CalendarIcon size={18} />
-              <span>Book a Meeting</span>
-            </a>
-            <a
-              href="#"
-              className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-            >
-              <Coffee size={18} />
-              <span>Buy Me a Coffee</span>
-            </a>
-          </div>
+          {renderActionButtons() || (
+            <div className="space-y-3 mb-6">
+              {card?.action_buttons && card.action_buttons.length > 0 ? (
+                renderActionButtons()
+              ) : (
+                <>
+                  <a
+                    href="#"
+                    className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                  >
+                    <Globe size={18} />
+                    <span>My Website</span>
+                  </a>
+                  <a
+                    href="#"
+                    className="w-full py-3 px-4 bg-gray-100 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                  >
+                    <CalendarIcon size={18} />
+                    <span>Book a Meeting</span>
+                  </a>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Save Contact Button */}
           <button
@@ -976,25 +1013,26 @@ const CardView: React.FC = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                 <div className="space-y-4">
-                  <div className="flex items-center">
-                    <Mail className="text-blue-500 mr-3" size={20} />
-                    <a
-                      href={`mailto:${card?.card_email || "john@example.com"}`}
-                      className="text-gray-700 hover:text-blue-500"
-                    >
-                      {card?.card_email || "john@example.com"}
-                    </a>
-                  </div>
-                  <div className="flex items-center">
-                    <Phone className="text-blue-500 mr-3" size={20} />
-                    <a href="tel:+15551234567" className="text-gray-700 hover:text-blue-500">
-                      +1 (555) 123-4567
-                    </a>
-                  </div>
+                  {card?.card_email && (
+                    <div className="flex items-center">
+                      <Mail className="text-blue-500 mr-3" size={20} />
+                      <a href={`mailto:${card.card_email}`} className="text-gray-700 hover:text-blue-500">
+                        {card.card_email}
+                      </a>
+                    </div>
+                  )}
+                  {card?.phone && (
+                    <div className="flex items-center">
+                      <Phone className="text-blue-500 mr-3" size={20} />
+                      <a href={`tel:${card.phone}`} className="text-gray-700 hover:text-blue-500">
+                        {card.phone}
+                      </a>
+                    </div>
+                  )}
                   {card?.display_address && (
                     <div className="flex items-center">
                       <MapPin className="text-blue-500 mr-3" size={20} />
-                      <span className="text-gray-700">{card.display_address || "Mahdia, Tunisia"}</span>
+                      <span className="text-gray-700">{card.display_address}</span>
                     </div>
                   )}
                 </div>
@@ -1005,99 +1043,145 @@ const CardView: React.FC = () => {
               {/* About */}
               <div>
                 <h2 className="text-xl font-semibold mb-4">About</h2>
-                <p className="text-gray-700">
-                  {card?.bio ||
-                    "Creating digital experiences that delight users and solve real problems. Passionate about UI/UX and design systems. I'm passionate about creating meaningful connections through design and technology. When I'm not designing, you'll find me exploring new places, experimenting with photography, or trying out new recipes in the kitchen."}
-                </p>
+                <p className="text-gray-700">{card?.bio || ""}</p>
               </div>
 
-              <hr className="border-gray-200" />
+              {card?.individual_details && (
+                <>
+                  <hr className="border-gray-200" />
 
-              {/* Personal Details */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Personal Details */}
                   <div>
-                    <h3 className="text-gray-500 mb-2">Birthday</h3>
-                    <div className="flex items-center">
-                      <CalendarIcon className="text-blue-500 mr-2" size={18} />
-                      <span className="text-gray-700">April 15, 1988</span>
+                    <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {card.individual_details.birthday && (
+                        <div>
+                          <h3 className="text-gray-500 mb-2">Birthday</h3>
+                          <div className="flex items-center">
+                            <CalendarIcon className="text-blue-500 mr-2" size={18} />
+                            <span className="text-gray-700">{card.individual_details.birthday}</span>
+                          </div>
+                        </div>
+                      )}
+                      {card.individual_details.hometown && (
+                        <div>
+                          <h3 className="text-gray-500 mb-2">Hometown</h3>
+                          <div className="flex items-center">
+                            <Home className="text-blue-500 mr-2" size={18} />
+                            <span className="text-gray-700">{card.individual_details.hometown}</span>
+                          </div>
+                        </div>
+                      )}
+                      {card.individual_details.current_city && (
+                        <div>
+                          <h3 className="text-gray-500 mb-2">Current City</h3>
+                          <div className="flex items-center">
+                            <MapPin className="text-blue-500 mr-2" size={18} />
+                            <span className="text-gray-700">{card.individual_details.current_city}</span>
+                          </div>
+                        </div>
+                      )}
+                      {card.individual_details.relationship_status && (
+                        <div>
+                          <h3 className="text-gray-500 mb-2">Relationship</h3>
+                          <div className="flex items-center">
+                            <Heart className="text-blue-500 mr-2" size={18} />
+                            <span className="text-gray-700">{card.individual_details.relationship_status}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-gray-500 mb-2">Hometown</h3>
-                    <div className="flex items-center">
-                      <Home className="text-blue-500 mr-2" size={18} />
-                      <span className="text-gray-700">San Francisco, CA</span>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-gray-500 mb-2">Current City</h3>
-                    <div className="flex items-center">
-                      <MapPin className="text-blue-500 mr-2" size={18} />
-                      <span className="text-gray-700">{card?.display_address || "Mahdia, Tunisia"}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-gray-500 mb-2">Relationship</h3>
-                    <div className="flex items-center">
-                      <Heart className="text-blue-500 mr-2" size={18} />
-                      <span className="text-gray-700">Married</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <hr className="border-gray-200" />
+                  {card.individual_details.interests && card.individual_details.interests.length > 0 && (
+                    <>
+                      <hr className="border-gray-200" />
 
-              {/* Interests & Hobbies */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Interests & Hobbies</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <Camera className="text-blue-500" size={24} />
-                    </div>
-                    <span className="text-gray-700 font-medium">Photography</span>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <Plane className="text-blue-500" size={24} />
-                    </div>
-                    <span className="text-gray-700 font-medium">Travel</span>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <Utensils className="text-blue-500" size={24} />
-                    </div>
-                    <span className="text-gray-700 font-medium">Cooking</span>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <BookOpen className="text-blue-500" size={24} />
-                    </div>
-                    <span className="text-gray-700 font-medium">Reading</span>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <Music className="text-blue-500" size={24} />
-                    </div>
-                    <span className="text-gray-700 font-medium">Music</span>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <Film className="text-blue-500" size={24} />
-                    </div>
-                    <span className="text-gray-700 font-medium">Movies</span>
-                  </div>
-                </div>
-              </div>
+                      {/* Interests & Hobbies */}
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Interests & Hobbies</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {card.individual_details.interests.map((interest, index) => {
+                            // Map interests to icons (simplified example)
+                            const getInterestIcon = (interest: string) => {
+                              const interestLower = interest.toLowerCase()
+                              if (interestLower.includes("photo")) return Camera
+                              if (interestLower.includes("travel")) return Plane
+                              if (interestLower.includes("cook")) return Utensils
+                              if (interestLower.includes("read")) return BookOpen
+                              if (interestLower.includes("music")) return Music
+                              if (interestLower.includes("movie") || interestLower.includes("film")) return Film
+                              return Camera // Default icon
+                            }
+
+                            const InterestIcon = getInterestIcon(interest)
+
+                            return (
+                              <div key={index} className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
+                                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                                  <InterestIcon className="text-blue-500" size={24} />
+                                </div>
+                                <span className="text-gray-700 font-medium">{interest}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           )}
 
           {activeTab === "resume" && (
             <div className="space-y-6">
-              <p className="text-gray-500 text-center py-8">Resume content will be displayed here</p>
+              {card?.individual_details?.resume ? (
+                <div className="space-y-6">
+                  {card.individual_details.resume.education && (
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4">Education</h2>
+                      <p className="text-gray-700">{card.individual_details.resume.education}</p>
+                    </div>
+                  )}
+
+                  {card.individual_details.resume.experience && (
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4">Experience</h2>
+                      <p className="text-gray-700">{card.individual_details.resume.experience}</p>
+                    </div>
+                  )}
+
+                  {card.individual_details.resume.skills && card.individual_details.resume.skills.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4">Skills</h2>
+                      <div className="flex flex-wrap gap-2">
+                        {card.individual_details.resume.skills.map((skill, index) => (
+                          <span key={index} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {card.individual_details.resume.certifications &&
+                    card.individual_details.resume.certifications.length > 0 && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Certifications</h2>
+                        <ul className="list-disc pl-5 space-y-2">
+                          {card.individual_details.resume.certifications.map((cert, index) => (
+                            <li key={index} className="text-gray-700">
+                              {cert}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">Resume content will be displayed here</p>
+              )}
             </div>
           )}
 
@@ -1124,6 +1208,13 @@ const CardView: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Render QR and Share Overlays */}
+      {renderQROverlay()}
+      {renderShareOverlay()}
+
+      {/* Render Floating Actions */}
+      {renderFloatingActions()}
     </div>
   )
 }

@@ -3,28 +3,48 @@
 import type React from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useMenu } from "../../context/MenuContext"
+import CardService from "../../services/CardService"
+import type { MenuItem } from "../../types/card"
 
 const MenuItemList: React.FC = () => {
   const { username, menuId } = useParams<{ username: string; menuId: string }>()
-  const { currentMenu, deleteMenuItem } = useMenu()
+  const { currentMenu, fetchMenu } = useMenu()
   const navigate = useNavigate()
 
-  if (!currentMenu || !currentMenu.items) {
+  if (!currentMenu) {
     return null
   }
 
+  // Ensure items is always an array
+  const items = currentMenu.items || []
+
   const handleAddItem = () => {
-    navigate(`/cards/${username}/menus/${menuId}/items/create`)
+    if (username && menuId) {
+      navigate(`/cards/${username}/menus/${menuId}/items/create`)
+    }
   }
 
   const handleEditItem = (itemId: string) => {
-    navigate(`/cards/${username}/menus/${menuId}/items/${itemId}/edit`)
+    if (username && menuId) {
+      navigate(`/cards/${username}/menus/${menuId}/items/${itemId}/edit`)
+    }
   }
 
   const handleDeleteItem = async (itemId: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      if (username && menuId) {
-        await deleteMenuItem(username, menuId, itemId)
+      try {
+        // Get the card ID from the current menu
+        const cardId = currentMenu.card
+        if (typeof cardId === "string" && menuId) {
+          await CardService.deleteMenuItem(cardId, menuId, itemId)
+          // Refresh the menu to update the UI
+          fetchMenu(cardId, menuId)
+        } else {
+          console.error("Missing cardId or menuId for delete operation")
+        }
+      } catch (error) {
+        console.error("Error deleting menu item:", error)
+        alert("Failed to delete menu item. Please try again.")
       }
     }
   }
@@ -48,7 +68,7 @@ const MenuItemList: React.FC = () => {
         </button>
       </div>
 
-      {currentMenu.items.length === 0 ? (
+      {items.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
@@ -107,7 +127,7 @@ const MenuItemList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-card divide-y divide-border">
-              {currentMenu.items.map((item) => (
+              {items.map((item: MenuItem) => (
                 <tr key={item._id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="flex items-center">
@@ -148,7 +168,7 @@ const MenuItemList: React.FC = () => {
                   <td className="px-6 py-5 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end space-x-3">
                       <button
-                        onClick={() => handleEditItem(item._id)}
+                        onClick={() => item._id && handleEditItem(item._id)}
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-medium text-sm flex items-center"
                       >
                         <svg
@@ -162,7 +182,7 @@ const MenuItemList: React.FC = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDeleteItem(item._id)}
+                        onClick={() => item._id && handleDeleteItem(item._id)}
                         className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium text-sm flex items-center"
                       >
                         <svg

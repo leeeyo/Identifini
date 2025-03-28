@@ -10,6 +10,14 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phone: {
+    type: String,
+    default : "",
+  },
+  tagline: {
+    type: String,
+    default: "",
+  },
   tagline: {
     type: String,
     default: "",
@@ -123,6 +131,77 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+},
+{
+  timestamps: true,
+})
+
+// Add middleware to exclude deleted records by default
+cardSchema.pre("find", function () {
+  // Only apply this filter if it's not explicitly overridden
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+
+  // Remove the includeDeleted flag from the query
+  delete this.getQuery().includeDeleted
+})
+
+cardSchema.pre("findOne", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+cardSchema.pre("findById", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+cardSchema.pre("countDocuments", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+// Method to soft delete
+cardSchema.methods.softDelete = async function () {
+  this.isDeleted = true
+  this.deletedAt = new Date()
+  return await this.save()
+}
+
+// Method to restore
+cardSchema.methods.restore = async function () {
+  this.isDeleted = false
+  this.deletedAt = null
+  return await this.save()
+}
+
+// Static method to find deleted records
+cardSchema.statics.findDeleted = function (query = {}) {
+  return this.find({ ...query, isDeleted: true })
+}
+
+// Static method to find all records including deleted
+cardSchema.statics.findWithDeleted = function (query = {}) {
+  return this.find({ ...query, includeDeleted: true })
+}
+
+const Card = mongoose.model("Card", cardSchema)
+
+module.exports = Card
 
 module.exports = mongoose.model("Card", cardSchema);

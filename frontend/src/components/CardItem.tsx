@@ -4,6 +4,17 @@ import type React from "react"
 import { Link } from "react-router-dom"
 import type { Card } from "../types/card"
 
+// Helper function for safe date formatting
+const formatDate = (dateString?: string): string => {
+  if (!dateString) return "N/A"
+  try {
+    return new Date(dateString).toLocaleDateString()
+  } catch (error) {
+    console.error("Error formatting date:", error)
+    return "Invalid date"
+  }
+}
+
 interface CardItemProps {
   card: Card
   onDelete: (id: string) => void
@@ -41,9 +52,7 @@ const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDup
           )}
           <div className="ml-3">
             <h4 className="font-semibold text-gray-800 dark:text-gray-200">{card.display_name}</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Created {new Date(card.created_at).toLocaleDateString()}
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Created {formatDate(card.created_at)}</p>
           </div>
         </div>
 
@@ -85,6 +94,14 @@ const CardItem: React.FC<CardItemProps> = ({ card, onDelete, onDuplicate, canDup
             className="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
           >
             Leads
+          </Link>
+
+          {/* Add menu management link */}
+          <Link
+            to={`/cards/${card.card_username}/menus`}
+            className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          >
+            Menus
           </Link>
         </div>
       </div>

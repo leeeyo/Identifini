@@ -301,8 +301,69 @@ class CardController {
       res.status(400).json({ error: error.message })
     }
   }
+  // Get deleted cards
+  async getDeletedCards(req, res) {
+    try {
+      const result = await cardService.getDeletedCards(req.user._id);
+      
+      res.status(200).json({
+        success: true,
+        count: result.total,
+        data: result.cards
+      });
+    } catch (error) {
+      console.error("Error in getDeletedCards:", error);
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  // Restore a deleted card
+  async restoreCard(req, res) {
+    try {
+      const { id } = req.params;
+      
+      // Check if the card belongs to the user
+      const isOwner = await cardService.checkCardOwnership(id, req.user._id);
+      if (!isOwner) {
+        return res.status(403).json({ error: "Not authorized to restore this card" });
+      }
+      
+      const restoredCard = await cardService.restoreCard(id);
+      
+      res.status(200).json({
+        success: true,
+        message: "Card restored successfully",
+        data: restoredCard
+      });
+    } catch (error) {
+      console.error("Error in restoreCard:", error);
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  // Permanently delete a card
+  async permanentlyDeleteCard(req, res) {
+    try {
+      const { id } = req.params;
+      
+      // Check if the card belongs to the user
+      const isOwner = await cardService.checkCardOwnership(id, req.user._id);
+      if (!isOwner) {
+        return res.status(403).json({ error: "Not authorized to permanently delete this card" });
+      }
+      
+      await cardService.permanentlyDeleteCard(id);
+      
+      res.status(200).json({
+        success: true,
+        message: "Card permanently deleted"
+      });
+    } catch (error) {
+      console.error("Error in permanentlyDeleteCard:", error);
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
 
-// Export a new instance of the controller
 module.exports = new CardController()
 

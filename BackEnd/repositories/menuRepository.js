@@ -25,6 +25,31 @@ class MenuRepository {
   async delete(menuId, cardId) {
     return await Menu.findOneAndDelete({ _id: menuId, card: cardId })
   }
+
+// Find a deleted menu by ID and card ID
+async findDeletedByIdAndCardId(menuId, cardId) {
+  return await Menu.findOne({ 
+    _id: menuId, 
+    card: cardId, 
+    isDeleted: true,
+    includeDeleted: true // This flag tells our middleware to include deleted records
+  });
+}
+
+// Restore a soft deleted menu
+async restore(menuId) {
+  const menu = await Menu.findOne({ 
+    _id: menuId, 
+    isDeleted: true,
+    includeDeleted: true 
+  });
+  
+  if (!menu) return null;
+  
+  menu.isDeleted = false;
+  menu.deletedAt = null;
+  return await menu.save();
+}
 }
 
 module.exports = new MenuRepository()

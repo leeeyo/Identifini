@@ -55,7 +55,7 @@ const MenuItemForm: React.FC = () => {
 
   useEffect(() => {
     if (isEditing && currentMenu && itemId) {
-      const item = currentMenu.items.find((item) => item._id === itemId)
+      const item = (currentMenu.items || []).find((item) => item._id === itemId)
       if (item) {
         setFormData({
           name: item.name,
@@ -63,7 +63,7 @@ const MenuItemForm: React.FC = () => {
           price: item.price,
           image: item.image || "",
           category: item.category || "",
-          isAvailable: item.isAvailable,
+          isAvailable: item.isAvailable ?? true,
         })
       }
     }

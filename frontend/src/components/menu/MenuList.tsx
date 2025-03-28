@@ -9,13 +9,14 @@ import CardService from "../../services/CardService"
 
 const MenuList: React.FC = () => {
   const { username } = useParams<{ username: string }>()
-  const { menus = [], loading, error, fetchMenus } = useMenu()
+  const { menus = [], loading, error, fetchMenus, getDeletedMenus, restoreMenu, permanentlyDeleteMenu } = useMenu()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [cardId, setCardId] = useState<string | null>(null)
   const [cardFetched, setCardFetched] = useState(false)
   const [localLoading, setLocalLoading] = useState(true)
   const [localError, setLocalError] = useState<string | null>(null)
+  const [viewingTrash, setViewingTrash] = useState(false)
 
   // Use useCallback to prevent recreating this function on every render
   const getCardId = useCallback(async () => {
@@ -74,16 +75,65 @@ const MenuList: React.FC = () => {
     }
   }
 
-  const handleRefresh = async () => {
-    if (cardId) {
+  const handleRestoreMenu = async (menuId: string) => {
+    if (window.confirm("Are you sure you want to restore this menu?")) {
       try {
-        setLocalLoading(true)
-        await fetchMenus(cardId)
+        await restoreMenu(menuId)
+        // Refresh deleted menus list
+        getDeletedMenus()
       } catch (err) {
-        console.error("Error refreshing menus:", err)
-      } finally {
-        setLocalLoading(false)
+        console.error("Error restoring menu:", err)
+        alert("Failed to restore menu. Please try again.")
       }
+    }
+  }
+
+  const handlePermanentlyDeleteMenu = async (menuId: string) => {
+    if (window.confirm("Are you sure you want to permanently delete this menu? This action cannot be undone.")) {
+      try {
+        await permanentlyDeleteMenu(menuId)
+        // Refresh deleted menus list
+        getDeletedMenus()
+      } catch (err) {
+        console.error("Error permanently deleting menu:", err)
+        alert("Failed to permanently delete menu. Please try again.")
+      }
+    }
+  }
+
+  const handleRefresh = async () => {
+    setLocalLoading(true)
+    try {
+      if (viewingTrash) {
+        await getDeletedMenus()
+      } else if (cardId) {
+        await fetchMenus(cardId)
+      }
+    } catch (err) {
+      console.error("Error refreshing menus:", err)
+    } finally {
+      setLocalLoading(false)
+    }
+  }
+
+  const handleToggleTrash = async () => {
+    setLocalLoading(true)
+    try {
+      if (viewingTrash) {
+        // Switch back to active menus
+        if (cardId) {
+          await fetchMenus(cardId)
+        }
+        setViewingTrash(false)
+      } else {
+        // Switch to trash view
+        await getDeletedMenus()
+        setViewingTrash(true)
+      }
+    } catch (err) {
+      console.error("Error toggling trash view:", err)
+    } finally {
+      setLocalLoading(false)
     }
   }
 
@@ -184,10 +234,60 @@ const MenuList: React.FC = () => {
               Back to Dashboard
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-card-foreground">Your Menus</h1>
-          <p className="text-muted-foreground mt-1">Manage and organize your digital menus</p>
+          <h1 className="text-3xl font-bold text-card-foreground">{viewingTrash ? "Deleted Menus" : "Your Menus"}</h1>
+          <p className="text-muted-foreground mt-1">
+            {viewingTrash
+              ? "Manage your deleted menus - restore or permanently delete them"
+              : "Manage and organize your digital menus"}
+          </p>
         </div>
         <div className="flex space-x-2">
+          <button
+            onClick={handleToggleTrash}
+            className={`${
+              viewingTrash
+                ? "bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400"
+                : "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400"
+            } px-3 py-2 rounded-md text-sm hover:bg-opacity-80 transition-colors flex items-center`}
+          >
+            {viewingTrash ? (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  />
+                </svg>
+                View Active Menus
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                View Trash
+              </>
+            )}
+          </button>
           <button
             onClick={handleRefresh}
             className="bg-muted text-muted-foreground p-2 rounded-full hover:bg-muted/80 transition-colors"
@@ -208,21 +308,23 @@ const MenuList: React.FC = () => {
               />
             </svg>
           </button>
-          <button
-            onClick={handleCreateMenu}
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors flex items-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {!viewingTrash && (
+            <button
+              onClick={handleCreateMenu}
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors flex items-center"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Create Menu
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Menu
+            </button>
+          )}
         </div>
       </div>
 
@@ -244,28 +346,36 @@ const MenuList: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-card-foreground mb-2">No menus available</h3>
-          <p className="text-muted-foreground mb-6">Create your first menu to showcase your offerings to customers.</p>
-          <button
-            onClick={handleCreateMenu}
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <h3 className="text-xl font-semibold text-card-foreground mb-2">
+            {viewingTrash ? "No deleted menus" : "No menus available"}
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            {viewingTrash
+              ? "You don't have any deleted menus at the moment."
+              : "Create your first menu to showcase your offerings to customers."}
+          </p>
+          {!viewingTrash && (
+            <button
+              onClick={handleCreateMenu}
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors inline-flex items-center"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Create Your First Menu
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Your First Menu
+            </button>
+          )}
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {menus.map((menu, index) => {
+            {menus.map((menu, index: number) => {
               const colorIndex = index % cardColors.length
               return (
                 <div
@@ -358,15 +468,22 @@ const MenuList: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          menu.isActive
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                        }`}
-                      >
-                        {menu.isActive ? "Active" : "Inactive"}
-                      </span>
+                      {!viewingTrash && (
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            menu.isActive
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                          }`}
+                        >
+                          {menu.isActive ? "Active" : "Inactive"}
+                        </span>
+                      )}
+                      {viewingTrash && menu.deletedAt && (
+                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                          Deleted: {new Date(menu.deletedAt).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
 
                     <h2 className="text-xl font-bold text-card-foreground mb-2">{menu.title}</h2>
@@ -392,111 +509,141 @@ const MenuList: React.FC = () => {
                         </svg>
                         {menu.items?.length || 0} items
                       </div>
-                      <div className="flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                          />
-                        </svg>
-                        Order: {menu.displayOrder}
-                      </div>
+                      {!viewingTrash && (
+                        <div className="flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                            />
+                          </svg>
+                          Order: {menu.displayOrder}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-between space-x-2 pt-4 border-t border-border h-10">
-                      <button
-                        onClick={() => handleViewMenu(menu._id)}
-                        className="flex-1 text-center py-2 rounded-md bg-card text-card-foreground hover:bg-muted transition-colors text-sm font-medium"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleEditMenu(menu._id)}
-                        className={`flex-1 text-center py-2 rounded-md ${cardColors[colorIndex].text} bg-card hover:bg-muted transition-colors text-sm font-medium`}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMenu(menu._id)}
-                        className="flex-1 text-center py-2 rounded-md bg-card text-red-600 dark:text-red-400 hover:bg-muted transition-colors text-sm font-medium"
-                      >
-                        Delete
-                      </button>
+                      {viewingTrash ? (
+                        <>
+                          <button
+                            onClick={() => menu._id && handleRestoreMenu(menu._id)}
+                            className="flex-1 text-center py-2 rounded-md bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/30 transition-colors text-sm font-medium"
+                          >
+                            Restore
+                          </button>
+                          <button
+                            onClick={() => menu._id && handlePermanentlyDeleteMenu(menu._id)}
+                            className="flex-1 text-center py-2 rounded-md bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
+                          >
+                            Delete Forever
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => (menu._id ? handleViewMenu(menu._id) : null)}
+                            className="flex-1 text-center py-2 rounded-md bg-card text-card-foreground hover:bg-muted transition-colors text-sm font-medium"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => (menu._id ? handleEditMenu(menu._id) : null)}
+                            className={`flex-1 text-center py-2 rounded-md ${cardColors[colorIndex].text} bg-card hover:bg-muted transition-colors text-sm font-medium`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => (menu._id ? handleDeleteMenu(menu._id) : null)}
+                            className="flex-1 text-center py-2 rounded-md bg-card text-red-600 dark:text-red-400 hover:bg-muted transition-colors text-sm font-medium"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
               )
             })}
 
-            {/* Add Menu Card */}
-            <div
-              onClick={handleCreateMenu}
-              className="border-2 border-dashed border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors cursor-pointer group"
-            >
-              <div className="p-6 h-full flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            {/* Add Menu Card - only show when not viewing trash */}
+            {!viewingTrash && (
+              <div
+                onClick={handleCreateMenu}
+                className="border-2 border-dashed border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors cursor-pointer group"
+              >
+                <div className="p-6 h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-8 w-8 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-card-foreground mb-2">Create New Menu</h3>
+                  <p className="text-muted-foreground">Add another menu to showcase more of your offerings</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!viewingTrash && (
+            <div className="mt-8 p-6 bg-card rounded-lg border border-border">
+              <h3 className="text-lg font-semibold text-card-foreground mb-4">Menu Tips</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex items-start">
                   <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8 text-primary"
+                    className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-card-foreground mb-2">Create New Menu</h3>
-                <p className="text-muted-foreground">Add another menu to showcase more of your offerings</p>
-              </div>
+                  <span>Create multiple menus for different times of day (breakfast, lunch, dinner)</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Use categories to organize your menu items for easier navigation</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Add detailed descriptions to entice customers and highlight special ingredients</span>
+                </li>
+              </ul>
             </div>
-          </div>
-
-          <div className="mt-8 p-6 bg-card rounded-lg border border-border">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4">Menu Tips</h3>
-            <ul className="space-y-2 text-muted-foreground">
-              <li className="flex items-start">
-                <svg
-                  className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Create multiple menus for different times of day (breakfast, lunch, dinner)</span>
-              </li>
-              <li className="flex items-start">
-                <svg
-                  className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Use categories to organize your menu items for easier navigation</span>
-              </li>
-              <li className="flex items-start">
-                <svg
-                  className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Add detailed descriptions to entice customers and highlight special ingredients</span>
-              </li>
-            </ul>
-          </div>
+          )}
         </>
       )}
     </div>

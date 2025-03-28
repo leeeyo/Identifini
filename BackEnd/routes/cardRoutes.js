@@ -39,6 +39,15 @@ router.put("/:id/package-details", cardController.updatePackageDetails)
 // Restaurant-specific routes
 router.put("/:id/link-menu", cardController.linkMenuToRestaurantCard)
 
+// Get deleted cards
+router.get("/trash", cardController.getDeletedCards)
+
+// Restore a deleted card
+router.post("/:id/restore", cardController.restoreCard)
+
+// Permanently delete a card
+router.delete("/:id/permanent", cardController.permanentlyDeleteCard)
+
 // Nested menu routes
 router.use("/:cardId/menus", require("./cardMenuRoutes"));
 

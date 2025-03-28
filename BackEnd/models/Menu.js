@@ -57,7 +57,71 @@ const menuSchema = new mongoose.Schema(
     },
   },
   { timestamps: true },
+{
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+},
+{ timestamps: true },
 )
+
+// Add middleware to exclude deleted records by default
+menuSchema.pre("find", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+menuSchema.pre("findOne", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+menuSchema.pre("findById", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+menuSchema.pre("countDocuments", function () {
+  if (!this.getQuery().includeDeleted) {
+    this.where({ isDeleted: false })
+  }
+  delete this.getQuery().includeDeleted
+})
+
+// Method to soft delete
+menuSchema.methods.softDelete = async function () {
+  this.isDeleted = true
+  this.deletedAt = new Date()
+  return await this.save()
+}
+
+// Method to restore
+menuSchema.methods.restore = async function () {
+  this.isDeleted = false
+  this.deletedAt = null
+  return await this.save()
+}
+
+// Static method to find deleted records
+menuSchema.statics.findDeleted = function (query = {}) {
+  return this.find({ ...query, isDeleted: true })
+}
+
+// Static method to find all records including deleted
+menuSchema.statics.findWithDeleted = function (query = {}) {
+  return this.find({ ...query, includeDeleted: true })
+}
 
 // Add index for faster queries
 menuSchema.index({ card: 1 })

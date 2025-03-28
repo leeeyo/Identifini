@@ -4,28 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import CardService from "../../services/CardService"
-
-interface MenuItem {
-  _id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-  isAvailable: boolean
-}
-
-interface Menu {
-  _id: string
-  card: string
-  title: string
-  description: string
-  items: MenuItem[]
-  isActive: boolean
-  displayOrder: number
-  createdAt: string
-  updatedAt: string
-}
+import type { Menu, MenuItem } from "../../types/card"
 
 // This component is for displaying the menu to customers
 const MenuDisplay: React.FC = () => {
@@ -99,7 +78,7 @@ const MenuDisplay: React.FC = () => {
   // If we're looking at a specific menu
   if (menuId && currentMenu) {
     // Group items by category
-    const categories = currentMenu.items.reduce(
+    const categories = (currentMenu.items || []).reduce(
       (acc, item) => {
         if (!item.isAvailable) return acc
 
@@ -110,7 +89,7 @@ const MenuDisplay: React.FC = () => {
         acc[category].push(item)
         return acc
       },
-      {} as Record<string, any[]>,
+      {} as Record<string, MenuItem[]>,
     )
 
     return (
@@ -176,11 +155,11 @@ const MenuDisplay: React.FC = () => {
             <h2 className="text-2xl font-semibold mb-2">{menu.title}</h2>
             {menu.description && <p className="text-gray-600 mb-4">{menu.description}</p>}
 
-            {menu.items.length === 0 ? (
+            {(menu.items || []).length === 0 ? (
               <p className="text-center text-gray-500 py-4">No items in this menu</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {menu.items
+                {(menu.items || [])
                   .filter((item) => item.isAvailable)
                   .map((item) => (
                     <div key={item._id} className="border rounded-lg p-4 flex justify-between">

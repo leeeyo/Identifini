@@ -9,4 +9,13 @@ router.use(protect);
 router.get("/", menuController.getAllMenusForUser);
 router.get("/:menuId", menuController.getMenuById);
 
+// Get deleted menus
+router.get("/trash", menuController.getDeletedMenus)
+
+// Restore a deleted menu
+router.post("/:menuId/restore", menuController.restoreMenu)
+
+// Permanently delete a menu
+router.delete("/:menuId/permanent", menuController.permanentlyDeleteMenu)
+
 module.exports = router;

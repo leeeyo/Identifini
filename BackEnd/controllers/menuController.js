@@ -251,4 +251,65 @@ exports.getAllMenusForUser = async (req, res) => {
     })
   }
 }
+// Get deleted menus
+exports.getDeletedMenus = async (req, res) => {
+  try {
+    const { cardId } = req.params
+    const deletedMenus = await menuService.getDeletedMenus(req.user._id, cardId)
+
+    res.status(200).json({
+      success: true,
+      count: deletedMenus.length,
+      data: deletedMenus,
+    })
+  } catch (error) {
+    console.error("Error fetching deleted menus:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch deleted menus",
+      error: error.message,
+    })
+  }
+}
+
+// Restore a deleted menu
+exports.restoreMenu = async (req, res) => {
+  try {
+    const { cardId, menuId } = req.params
+    const restoredMenu = await menuService.restoreMenu(req.user._id, cardId, menuId)
+
+    res.status(200).json({
+      success: true,
+      message: "Menu restored successfully",
+      data: restoredMenu,
+    })
+  } catch (error) {
+    console.error("Error restoring menu:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to restore menu",
+      error: error.message,
+    })
+  }
+}
+
+// Permanently delete a menu
+exports.permanentlyDeleteMenu = async (req, res) => {
+  try {
+    const { cardId, menuId } = req.params
+    await menuService.permanentlyDeleteMenu(req.user._id, cardId, menuId)
+
+    res.status(200).json({
+      success: true,
+      message: "Menu permanently deleted",
+    })
+  } catch (error) {
+    console.error("Error permanently deleting menu:", error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to permanently delete menu",
+      error: error.message,
+    })
+  }
+}
 

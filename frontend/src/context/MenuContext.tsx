@@ -3,28 +3,8 @@
 import type React from "react"
 import { createContext, useContext, useState, useCallback } from "react"
 import CardService from "../services/CardService"
-
-interface MenuItem {
-  _id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-  isAvailable: boolean
-}
-
-interface Menu {
-  _id: string
-  card: string
-  title: string
-  description: string
-  items: MenuItem[]
-  isActive: boolean
-  displayOrder: number
-  createdAt: string
-  updatedAt: string
-}
+import MenuService from "../services/MenuService"
+import type { Menu, MenuItem } from "../types/card"
 
 interface MenuContextType {
   menus: Menu[]
@@ -33,12 +13,17 @@ interface MenuContextType {
   error: string | null
   fetchMenus: (cardId: string) => Promise<void>
   fetchMenu: (cardId: string, menuId: string) => Promise<void>
+  fetchAllMenus: () => Promise<void>
+  fetchStandaloneMenu: (menuId: string) => Promise<void>
   createMenu: (cardId: string, menuData: Partial<Menu>) => Promise<Menu>
   updateMenu: (cardId: string, menuId: string, menuData: Partial<Menu>) => Promise<Menu>
   deleteMenu: (cardId: string, menuId: string) => Promise<void>
   createMenuItem: (cardId: string, menuId: string, itemData: Partial<MenuItem>) => Promise<void>
   updateMenuItem: (cardId: string, menuId: string, itemId: string, itemData: Partial<MenuItem>) => Promise<void>
   deleteMenuItem: (cardId: string, menuId: string, itemId: string) => Promise<void>
+  getDeletedMenus: () => Promise<void>
+  restoreMenu: (menuId: string) => Promise<void>
+  permanentlyDeleteMenu: (menuId: string) => Promise<void>
 }
 
 const MenuContext = createContext<MenuContextType | undefined>(undefined)
@@ -76,6 +61,28 @@ export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
+  const fetchAllMenus = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await MenuService.getAllMenus()
+
+      if (response && Array.isArray(response.menus)) {
+        setMenus(response.menus)
+      } else {
+        console.warn("Invalid menus response format:", response)
+        setMenus([])
+      }
+    } catch (err) {
+      console.error("Error fetching all menus:", err)
+      setError("Failed to fetch menus")
+      setMenus([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const fetchMenu = useCallback(async (cardId: string, menuId: string) => {
     if (!cardId || !menuId) return
 
@@ -87,6 +94,23 @@ export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentMenu(menu)
     } catch (err) {
       console.error("Error fetching menu:", err)
+      setError("Failed to fetch menu")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchStandaloneMenu = useCallback(async (menuId: string) => {
+    if (!menuId) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const menu = await MenuService.getMenuById(menuId)
+      setCurrentMenu(menu)
+    } catch (err) {
+      console.error("Error fetching standalone menu:", err)
       setError("Failed to fetch menu")
     } finally {
       setLoading(false)
@@ -206,6 +230,64 @@ export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const getDeletedMenus = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await MenuService.getDeletedMenus()
+
+      if (response && Array.isArray(response.menus)) {
+        setMenus(response.menus)
+      } else {
+        console.warn("Invalid deleted menus response format:", response)
+        setMenus([])
+      }
+    } catch (err) {
+      console.error("Error fetching deleted menus:", err)
+      setError("Failed to fetch deleted menus")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const restoreMenu = async (menuId: string) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      await MenuService.restoreMenu(menuId)
+      // Remove the restored menu from the current list if we're viewing trash
+      setMenus((prevMenus) => prevMenus.filter((menu) => menu._id !== menuId))
+    } catch (err) {
+      console.error("Error restoring menu:", err)
+      setError("Failed to restore menu")
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const permanentlyDeleteMenu = async (menuId: string) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      await MenuService.permanentlyDeleteMenu(menuId)
+      // Remove the permanently deleted menu from the current list
+      setMenus((prevMenus) => prevMenus.filter((menu) => menu._id !== menuId))
+      if (currentMenu && currentMenu._id === menuId) {
+        setCurrentMenu(null)
+      }
+    } catch (err) {
+      console.error("Error permanently deleting menu:", err)
+      setError("Failed to permanently delete menu")
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <MenuContext.Provider
       value={{
@@ -215,12 +297,17 @@ export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children
         error,
         fetchMenus,
         fetchMenu,
+        fetchAllMenus,
+        fetchStandaloneMenu,
         createMenu,
         updateMenu,
         deleteMenu,
         createMenuItem,
         updateMenuItem,
         deleteMenuItem,
+        getDeletedMenus,
+        restoreMenu,
+        permanentlyDeleteMenu,
       }}
     >
       {children}

@@ -17,6 +17,16 @@ if (!fs.existsSync(path.join(__dirname, "logs"))) {
   fs.mkdirSync(path.join(__dirname, "logs"))
 }
 
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync(path.join(__dirname, "uploads"))) {
+  fs.mkdirSync(path.join(__dirname, "uploads"))
+}
+
+// Create temp directory if it doesn't exist
+if (!fs.existsSync(path.join(__dirname, "temp"))) {
+  fs.mkdirSync(path.join(__dirname, "temp"))
+}
+
 // Enhanced security middleware
 app.use(helmet())
 
@@ -39,6 +49,9 @@ app.use("/api", apiLimiter)
 // Standard middleware
 app.use(cors())
 app.use(express.json())
+
+// Serve static files from the uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
 // Add a test route at the root level
 app.get("/", (req, res) => {
@@ -69,6 +82,9 @@ const subUserRoutes = require("./routes/subUserRoutes")
 const menuRoutes = require("./routes/menuRoutes")
 const searchRoutes = require("./routes/searchRoutes")
 const analyticsRoutes = require("./routes/analyticsRoutes")
+// const uploadRoutes = require("./routes/uploadRoutes")
+// const qrCodeRoutes = require("./routes/qrCodeRoutes")
+const emailRoutes = require("./routes/emailRoutes")
 
 // Register routes
 app.use("/api/cards", cardRoutes)
@@ -77,6 +93,9 @@ app.use("/api/sub-users", subUserRoutes)
 app.use("/api/menus", menuRoutes)
 app.use("/api/search", searchRoutes)
 app.use("/api/analytics", analyticsRoutes)
+// app.use("/api/uploads", uploadRoutes)
+// app.use("/api/qrcodes", qrCodeRoutes)
+app.use("/api/email", emailRoutes)
 
 // Error logging middleware
 app.use(errorLogger)
