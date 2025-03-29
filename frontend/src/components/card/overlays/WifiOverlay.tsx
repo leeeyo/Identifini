@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
-import { Icon } from "../IconWrapper"
+import { Icon } from "../../IconWrapper"
 import "./Overlays.css"
 
 interface WifiOverlayProps {

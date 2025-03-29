@@ -256,6 +256,52 @@ class CardService {
     
     return await this.getAllCards(userId, packageType)
   }
+
+// Soft delete a card
+async softDeleteCard(id) {
+  if (!id) throw new Error("Card ID is required");
+  
+  const existingCard = await cardRepository.getById(id);
+  if (!existingCard) throw new Error("Card not found");
+  
+  return await cardRepository.softDelete(id);
+}
+
+// Restore a deleted card
+async restoreCard(id) {
+  if (!id) throw new Error("Card ID is required");
+  
+  const restoredCard = await cardRepository.restore(id);
+  if (!restoredCard) throw new Error("Card not found or not deleted");
+  
+  return restoredCard;
+}
+
+// Get deleted cards for a user
+async getDeletedCards(userId) {
+  if (!userId) throw new Error("User ID is required");
+  
+  const deletedCards = await cardRepository.getDeletedByUserId(userId);
+  return { cards: deletedCards, total: deletedCards.length };
+}
+
+// Check if a card belongs to a user (including deleted cards)
+async checkCardOwnership(cardId, userId) {
+  if (!cardId) throw new Error("Card ID is required");
+  if (!userId) throw new Error("User ID is required");
+  
+  const card = await cardRepository.findOneWithDeleted({ _id: cardId });
+  if (!card) return false;
+  
+  return card.user.toString() === userId.toString();
+}
+
+// Permanently delete a card
+async permanentlyDeleteCard(id) {
+  if (!id) throw new Error("Card ID is required");
+  
+  return await cardRepository.permanentlyDelete(id);
+}
 }
 
 module.exports = new CardService()

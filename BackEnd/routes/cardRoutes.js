@@ -15,38 +15,39 @@ router.get("/all", cardController.fetchAllCardsForUserAndSubUsers)
 // Get cards by package type
 router.get("/package/:packageType", cardController.fetchCardsByPackageType)
 
-// Create a new card
-router.post("/", cardController.createCard)
-
-// Get, update, delete a card by ID
-router.get("/:id", cardController.fetchCard)
-router.put("/:id", cardController.updateCard)
-router.delete("/:id", cardController.deleteCard)
+// Get deleted cards 
+router.get("/trash", cardController.getDeletedCards)
 
 // Get a card by username
 router.get("/username/:username", cardController.fetchCardByUsername)
 
+// Create a new card
+router.post("/", cardController.createCard)
+
+// DYNAMIC PARAMETER ROUTES AFTER SPECIFIC ROUTES
+// Get, update, delete a card by ID
+router.get("/:cardId", cardController.fetchCard)
+router.put("/:cardId", cardController.updateCard)
+router.delete("/:cardId", cardController.deleteCard)
+
 // Duplicate a card
-router.post("/:id/duplicate", cardController.duplicateCard)
+router.post("/:cardId/duplicate", cardController.duplicateCard)
 
 // Transfer a card to another user
-router.post("/:id/transfer", cardController.transferCard)
+router.post("/:cardId/transfer", cardController.transferCard)
 
 // Package-related routes
-router.put("/:id/package-type", cardController.changePackageType)
-router.put("/:id/package-details", cardController.updatePackageDetails)
+router.put("/:cardId/package-type", cardController.changePackageType)
+router.put("/:cardId/package-details", cardController.updatePackageDetails)
 
 // Restaurant-specific routes
-router.put("/:id/link-menu", cardController.linkMenuToRestaurantCard)
-
-// Get deleted cards
-router.get("/trash", cardController.getDeletedCards)
+router.put("/:cardId/link-menu", cardController.linkMenuToRestaurantCard)
 
 // Restore a deleted card
-router.post("/:id/restore", cardController.restoreCard)
+router.post("/:cardId/restore", cardController.restoreCard)
 
 // Permanently delete a card
-router.delete("/:id/permanent", cardController.permanentlyDeleteCard)
+router.delete("/:cardId/permanent", cardController.permanentlyDeleteCard)
 
 // Nested menu routes
 router.use("/:cardId/menus", require("./cardMenuRoutes"));

@@ -84,6 +84,43 @@ class CardRepository {
       { new: true, runValidators: true }
     ).populate("user");
   }
+
+// Find a card by ID including deleted ones
+async findOneWithDeleted(query) {
+  // Add includeDeleted flag to include soft deleted records
+  return await Card.findOne({ ...query, includeDeleted: true });
+}
+
+// Soft delete a card
+async softDelete(id) {
+  const card = await Card.findById(id);
+  if (!card) return null;
+  
+  card.isDeleted = true;
+  card.deletedAt = new Date();
+  return await card.save();
+}
+
+// Restore a soft deleted card
+async restore(id) {
+  // Find the card with deleted ones included
+  const card = await Card.findOne({ _id: id, isDeleted: true, includeDeleted: true });
+  if (!card) return null;
+  
+  card.isDeleted = false;
+  card.deletedAt = null;
+  return await card.save();
+}
+
+// Get all deleted cards for a user
+async getDeletedByUserId(userId) {
+  return await Card.find({ user: userId, isDeleted: true, includeDeleted: true });
+}
+
+// Permanently delete a card
+async permanentlyDelete(id) {
+  return await Card.findByIdAndDelete(id);
+}
 }
 
 module.exports = new CardRepository();

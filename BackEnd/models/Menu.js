@@ -27,7 +27,7 @@ const menuItemSchema = new mongoose.Schema(
       default: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 )
 
 const menuSchema = new mongoose.Schema(
@@ -55,19 +55,17 @@ const menuSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Move these fields into the main schema definition
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true },
-{
-  isDeleted: {
-    type: Boolean,
-    default: false,
-  },
-  deletedAt: {
-    type: Date,
-    default: null,
-  },
-},
-{ timestamps: true },
+  { timestamps: true }
 )
 
 // Add middleware to exclude deleted records by default
@@ -126,7 +124,7 @@ menuSchema.statics.findWithDeleted = function (query = {}) {
 // Add index for faster queries
 menuSchema.index({ card: 1 })
 
-const Menu = mongoose.model("Menu", menuSchema)
+const Menu = mongoose.model("Menu", menuSchema, "menus")
 
 module.exports = Menu
 

@@ -1,3 +1,4 @@
+//card.ts
 export interface Card {
   _id?: string
   id?: string

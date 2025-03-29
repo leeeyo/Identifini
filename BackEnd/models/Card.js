@@ -202,6 +202,4 @@ cardSchema.statics.findWithDeleted = function (query = {}) {
 
 const Card = mongoose.model("Card", cardSchema)
 
-module.exports = Card
-
 module.exports = mongoose.model("Card", cardSchema);

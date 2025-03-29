@@ -5,7 +5,6 @@ export interface User {
     email?: string
     role: string
     profilePicture?: string
-    themePreference?: "light" | "dark"
     created_at?: string
     token?: string
   }
@@ -20,7 +19,6 @@ export interface User {
     password: string
     name?: string
     email?: string
-    themePreference?: "light" | "dark"
   }
   
   export interface SocialAuthData {
